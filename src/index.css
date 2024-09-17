@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+.fc-v-event {
+    background: transparent;
+    border: none;
+    overflow: hidden;
+}
+
+.fc-v-event .fc-event-main {
+    color: inherit;
+}
+
+.fc-timegrid-event .fc-event-main {
+    padding: 0;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    @apply flex flex-col sm:flex-row gap-2;
+}
+
+.fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:nth-child(2) {
+    @apply order-first text-center w-full sm:w-fit sm:order-none mb-2 sm:mb-0;
+}
+
+.fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:first-child{
+    @apply flex justify-between flex-row-reverse sm:flex-row w-full sm:w-fit sm:justify-start;
+}
+
+.fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:first-child .fc-today-button {
+    @apply ml-0 sm:ml-2;
+}
+
+.fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:last-child, .fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:last-child .fc-button-group{
+    @apply w-full sm:w-fit;
+}
