@@ -51,6 +51,8 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
     "discount_percent": "0",
     "price": "0",
     "unit": "0",
+    "notice_period_for_cancellation" : "0",
+    "notice_period_for_booking" : "0",
   });
   const [products, setProducts] = useState<any[]>([]);
   const [product, setProduct] = useState<any>({
@@ -109,7 +111,9 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
               ...defaultOption,
               "discount_percent": defaultProduct.discount_percent,
               "price": defaultProduct.price,
-              "unit": defaultProduct.unit
+              "unit": defaultProduct.unit,
+              "notice_period_for_booking":userInfo.notice_period_for_booking,
+              "notice_period_for_cancellation":userInfo.notice_period_for_cancellation
             });
           }
         }
@@ -229,8 +233,9 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
    *
    * @param e FormSubmit
    */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    console.log(e)
+    if(e) e.preventDefault();
 
     const data: any = {
       'user_role': userRole,
@@ -261,6 +266,8 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
       /** end */
       data.enable_payment = isPaymentEnable ? "enabled" : "disabled";
       data.rate = defaultOption.price;
+      data.notice_period_for_cancellation = defaultOption.notice_period_for_cancellation;
+      data.notice_period_for_booking = defaultOption.notice_period_for_booking;
       newData.enable_payment = data.enable_payment;
       newData.rate = data.rate
     }
@@ -283,7 +290,14 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
             else return item;
           })
         ]);
-        toast.success('Pricing is saved.');
+
+        const userdata = localStorage.getItem('user-info');
+        const userInfo = JSON.parse(userdata || '');
+        userInfo["notice_period_for_booking"] = defaultOption.notice_period_for_booking;
+        userInfo["notice_period_for_cancellation"] =defaultOption.notice_period_for_cancellation;
+        localStorage.setItem('user-info', JSON.stringify(userInfo));
+        if(e) toast.success('Pricing is saved.');
+        else toast.success('Notice Periods is saved')
       }
     } catch (error: any) {
       toast.error(error.message || 'Server had an issue right now.');
@@ -673,6 +687,29 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
                             </div>
                           </>
                         }
+                        <div className={`flex gap-2`}>
+                          <div className="w-1/2">
+                            <Label>Notice Period for Cancellation</Label>
+                            <Input
+                              name="notice_period_for_cancellation"
+                              className={`mt-1.5  relative ${showGuide && signupProcess === 4 ? 'z-[1001] border-4 border-red-400' : ''}`}
+                              value={defaultOption.notice_period_for_cancellation}
+                              onChange={handleChange}
+                            />
+                          </div>
+                          <div className="w-1/2">
+                            <Label>Notice Period for Booking</Label>
+                            <Input
+                              name="notice_period_for_booking"
+                              className={`mt-1.5  relative ${showGuide && signupProcess === 4 ? 'z-[1001] border-4 border-red-400' : ''}`}
+                              value={defaultOption.notice_period_for_booking}
+                              onChange={handleChange}
+                            />
+                          </div>
+                        </div>
+                        <div className="pt-2">
+                          <ButtonPrimary type="button" className={`${showGuide && signupProcess === 4 ? 'z-[1001] border-4 border-red-400' : ''}`} onClick={() => handleSubmit()}>Save Notice Periods</ButtonPrimary>
+                        </div>
                       </>
                     }
                   </div>

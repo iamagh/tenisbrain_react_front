@@ -69,6 +69,7 @@ const PageAvailability: React.FC = () => {
       }, 500);
     }
     updateAvailability(availabilitys);
+    toast.success('Availability is updated');
   };
 
   useEffect(() => {

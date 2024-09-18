@@ -206,15 +206,17 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
           toast.success('Created New Event successfully.');
         }
       } else {
-        const selectedPaidProduct = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id) : {
+        const defaultProdcut = {
           players: [],
           book_count: 0,
           repeat: false,
           payment_intent_id: null,
         };
-        const product_price = selectedPaidProduct == 'undefined' ? products.find((product: any) => product.id == selectedPaidProduct.product_id).price : selectedProduct.price;
+        const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id) : null ;
+        const selectedPaidProduct = paidProdcut || defaultProdcut;
+        const isPaidProduct = !!paidProdcut;
+        const product_price = isPaidProduct ? products.find((product: any) => product.id == selectedPaidProduct.product_id).price : selectedProduct.price;
         selectedPaidProduct.players = members;
-        const isPaidProduct = !!selectedPaidProduct;
         const book_count = selectedPaidProduct?.book_count || 0;
         const isSeries = selectedPaidProduct?.repeat || false;
         reqData.product_price = product_price;

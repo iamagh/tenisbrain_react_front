@@ -10,6 +10,15 @@ export const getAllProducts = async (coachId: string): Promise<any> => {
     }
 };
 
+export const getCoach = async (coachId: string): Promise<any> => {
+    try {
+        const response = await axiosInstance.get(`/product/${coachId}`);
+        return response.data;
+    } catch (error: any) {
+        throw error.response ? error.response.data : error.message;
+    }
+};
+
 
 export const deleteProduct = async (productId: string): Promise<any> => {
     try {
