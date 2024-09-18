@@ -181,7 +181,6 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
           const event_series = result.events;
           const availableEvents = event_series.filter((v:any) => new Date(v.start_time) >= new Date(data.start));
           reqData.product_price = reqData.product_price * availableEvents.length;
-          console.log('reqData',reqData)
         }
         if (data.id) {
           if (typeof paidTxId == "undefined") {
