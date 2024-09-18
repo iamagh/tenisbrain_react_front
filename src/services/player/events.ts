@@ -36,6 +36,15 @@ export const updateEvent = async (eventId: string, eventData: any): Promise<any>
   }
 };
 
+export const getAllEventSeries = async (event_series: string) : Promise<any> => {
+  try {
+    const response = await axiosInstance.get(`/events/${event_series}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response ? error.response.data : error.message;
+  }
+}
+
 // export const deleteEvent = async (eventId: string, txId: string): Promise<any> => {
 //   try {
 //     const response = await axiosInstance.delete(`/player/events/${eventId}`, {

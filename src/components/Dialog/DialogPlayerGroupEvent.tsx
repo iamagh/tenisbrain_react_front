@@ -14,7 +14,7 @@ import ContentAccordion from "components/CustomComponents/ContentAccordion";
 
 import { toast } from "react-toastify";
 
-import { deleteEvent, updateEvent } from "services/player/events";
+import { deleteEvent, updateEvent, getAllEventSeries } from "services/player/events";
 import { getAllMembers } from "services/player/members";
 import { getAllCoaches } from "services/player/coches";
 
@@ -150,11 +150,10 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
   }, [isOpen, data]);
 
   const handleSubmit = async () => {
-    const checkedCount = members.filter((member: any) => member.checked == true).length;
-    groupEvent.players = members;
+    groupEvent.players = members.filter((member: any) => member.checked == true);
+    const checkedCount = groupEvent.players.length;
 
     const coach: any = coaches.find((item: any) => item.id == data.coach_id);
-    console.log(repeated)
     try {
       const reqData = groupEvent;
       reqData.group = true;
@@ -166,7 +165,6 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         reqData.product_id = selectedProduct.id;
         reqData.description = selectedProduct.product;
       }
-      console.log(data, '----> data')
       if (typeof reqData.booked_dates == 'undefined') {
         reqData.booked_dates = [];
       }
@@ -178,7 +176,13 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         onOK()
         toast.success('Updated Event.');
       } else {
-        if (repeated) reqData.product_price = reqData.product_price * data.series_count;
+        if (repeated) {
+          const result = await getAllEventSeries(data.event_series);
+          const event_series = result.events;
+          const availableEvents = event_series.filter((v:any) => new Date(v.start_time) >= new Date(data.start));
+          reqData.product_price = reqData.product_price * availableEvents.length;
+          console.log('reqData',reqData)
+        }
         if (data.id) {
           if (typeof paidTxId == "undefined") {
             setOpenStripeModal(true);
