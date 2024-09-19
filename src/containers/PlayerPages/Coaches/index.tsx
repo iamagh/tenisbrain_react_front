@@ -26,7 +26,7 @@ type Coach = {
 
 const PagePlayerCoaches: React.FC = () => {
   const navigate = useNavigate();
-  const playerGuide = localStorage.getItem('signup-processs') || "0";
+  const playerGuide = localStorage.getItem('signup_processs') || "0";
   const [selectedCoachId, setSelectedCoachId] = useState<number | null>(null);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

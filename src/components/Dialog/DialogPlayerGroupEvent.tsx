@@ -152,6 +152,10 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
   const handleSubmit = async () => {
     groupEvent.players = members.filter((member: any) => member.checked == true);
     const checkedCount = groupEvent.players.length;
+    if (checkedCount === 0) {
+      toast.error('Please select at least one player.');
+      return;
+    }
 
     const coach: any = coaches.find((item: any) => item.id == data.coach_id);
     try {

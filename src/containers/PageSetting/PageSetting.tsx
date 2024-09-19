@@ -692,7 +692,7 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
                             <Label>Notice Period for Cancellation</Label>
                             <Input
                               name="notice_period_for_cancellation"
-                              className={`mt-1.5  relative ${showGuide && signupProcess === 4 ? 'z-[1001] border-4 border-red-400' : ''}`}
+                              className={`mt-1.5  relativ`}
                               value={defaultOption.notice_period_for_cancellation}
                               onChange={handleChange}
                             />
@@ -701,14 +701,14 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
                             <Label>Notice Period for Booking</Label>
                             <Input
                               name="notice_period_for_booking"
-                              className={`mt-1.5  relative ${showGuide && signupProcess === 4 ? 'z-[1001] border-4 border-red-400' : ''}`}
+                              className={`mt-1.5  relative`}
                               value={defaultOption.notice_period_for_booking}
                               onChange={handleChange}
                             />
                           </div>
                         </div>
                         <div className="pt-2">
-                          <ButtonPrimary type="button" className={`${showGuide && signupProcess === 4 ? 'z-[1001] border-4 border-red-400' : ''}`} onClick={() => handleSubmit()}>Save Notice Periods</ButtonPrimary>
+                          <ButtonPrimary type="button" onClick={() => handleSubmit()}>Save Notice Periods</ButtonPrimary>
                         </div>
                       </>
                     }

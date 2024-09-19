@@ -43,8 +43,8 @@ const GoogleLoginButton: React.FC<Props> = ({ isSignUp, isCoach = '', coachData 
        * 
        * set LocalStorage with response
        */
+      signin(res);
       if (res) {
-        signin(res);
         dispatch(setAuthData(res));
         if (isSignUp === 'sign_up') {
           // signup process

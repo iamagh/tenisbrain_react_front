@@ -51,7 +51,7 @@ const clearStorage = () => {
 }
 
 const updateProcess = (step: number) => {
-    localStorage.setItem("signup-process", step.toString());
+    localStorage.setItem("signup_process", step.toString());
 }
 
 export {

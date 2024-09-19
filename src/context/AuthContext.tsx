@@ -32,12 +32,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem("access-token", access);
     localStorage.setItem("refresh-token", refresh);
     if (response.role) {
-      const { user, user_info, role, player_coach, signup_process } = response;
+      const { user, user_info, role, player_coach } = response;
       localStorage.setItem("user", user);
       localStorage.setItem("player-coach", player_coach);
       localStorage.setItem("user-role", role);
       localStorage.setItem("user-info", JSON.stringify(user_info));
-      localStorage.setItem("signup_process", signup_process);
+      localStorage.setItem("signup_process", user_info.signup_process);
     }
   }, []);
 
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("player-coach");
     localStorage.removeItem("user-role");
     localStorage.removeItem("user-info");
-    localStorage.removeItem("signup-process");
+    localStorage.removeItem("signup_process");
     setIsAuthenticated(false);
   }, []);
 
