@@ -31,6 +31,24 @@ const StripeModal: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
   )
 }
 
+const formatDate = (dateTimeStr:string) => {
+  const date = new Date(dateTimeStr);
+
+  // Manual mapping for short month names
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const month = monthNames[date.getMonth()]; // Get the short month name
+  const day = date.getDate();                // Get the day
+  const year = date.getFullYear();           // Get the full year
+  const hours = date.getHours();             // Get the hour (24-hour format)
+  const minutes = date.getMinutes().toString().padStart(2, '0'); // Get the minutes and pad if needed
+  const ampm = hours >= 12 ? 'PM' : 'AM';    // Determine AM/PM
+  const formattedHour = hours % 12 || 12;    // Convert 24-hour to 12-hour format
+
+  // Combine to create the desired format
+  return `${month} ${day}, ${year}, ${formattedHour}:${minutes} ${ampm}`;
+};
+
 const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, coachId, selectedProduct, reqEventData }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -38,7 +56,7 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [privateType, setPrivateType] = useState(false);
-  const [realPrice, setRealPrice] = useState((reqEventData.duration === '60 minutes' ? 1 : 1.5) * selectedProduct.price || "10");
+  const [realPrice, setRealPrice] = useState((reqEventData.duration === '60 minutes' ? 1 : 1.5) * reqEventData.product_price || "10");
 
   console.log(reqEventData, '----> reqEventData')
 
@@ -150,7 +168,10 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
               </div>
             }
             <>
-              <button onClick={onRequestClose}>Close</button>
+              <div className="relative text-center">
+                <button onClick={onRequestClose} className="absolute left-0">Close</button>
+                {reqEventData.repeat_status ? `${formatDate(reqEventData.start)} - ${formatDate(reqEventData.event_last_time)}` : formatDate(reqEventData.start)}
+              </div>
               <form onSubmit={handleSubmit} className="payment-form">
                 <h2>Complete Your Payment</h2>
                 <div className="form-group">

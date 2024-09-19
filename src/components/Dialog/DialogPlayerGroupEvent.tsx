@@ -182,11 +182,13 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         onOK()
         toast.success('Updated Event.');
       } else {
+        console.log('reqData.product_price',reqData.product_price)
         if (repeated) {
           const result = await getAllEventSeries(data.event_series);
           const event_series = result.events;
           const availableEvents = event_series.filter((v:any) => new Date(v.start_time) >= new Date(data.start));
           reqData.product_price = reqData.product_price * availableEvents.length * (availableEvents.length >= reqData.unit ? (100 - reqData.discount) / 100 : 1);
+          reqData['event_last_time'] = availableEvents[availableEvents.length - 1].end_time;
         }
         if (data.id) {
           console.log('paidTxId',paidTxId)
@@ -426,13 +428,15 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
                         <Label>Price</Label>
                         <Input className="mt-1" defaultValue={data.product_price} readOnly={true} />
                       </div>
-                      <div>
-                        <Label>Discount Rate</Label>
-                        <Input className="mt-1" defaultValue={data.discount} readOnly={true} />
-                      </div>
-                      <div>
-                        <Label>Unit</Label>
-                        <Input className="mt-1" defaultValue={data.unit} readOnly={true} />
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <Label>Discount Rate</Label>
+                          <Input className="mt-1" defaultValue={data.discount} readOnly={true} />
+                        </div>
+                        <div>
+                          <Label>Unit</Label>
+                          <Input className="mt-1" defaultValue={data.unit} readOnly={true} />
+                        </div>
                       </div>
 
                       {/* --- flag to apply for entire serialized class or not */}
