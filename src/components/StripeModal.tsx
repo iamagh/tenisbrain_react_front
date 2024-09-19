@@ -56,7 +56,7 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [privateType, setPrivateType] = useState(false);
-  const [realPrice, setRealPrice] = useState((reqEventData.duration === '60 minutes' ? 1 : 1.5) * reqEventData.product_price || "10");
+  const [realPrice, setRealPrice] = useState(reqEventData.product_price || "10");
 
   console.log(reqEventData, '----> reqEventData')
 
