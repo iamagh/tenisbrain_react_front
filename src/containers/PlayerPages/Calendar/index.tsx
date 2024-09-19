@@ -68,6 +68,8 @@ const PagePlayerCalenda: React.FC = () => {
     description: "Junior - Red Ball",
     duration: "60 minutes",
     start_time: "",
+    discount: 0,
+    unit:0 
   });
 
   const renderEventContent = (eventContent: EventContentArg) => {

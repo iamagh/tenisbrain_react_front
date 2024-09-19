@@ -174,9 +174,16 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
    */
   const handleSubmit = async () => {
     const checkedCount = members.filter((member: any) => member.checked == true).length;
-    const coach: any = coaches.find((item: any) => item.id == data.coach_id);
+    const coach: any = coaches.find((item: any) => item.id == event.coach_id);
     if (!event.players) {
       toast.error('Please select players');
+      return;
+    }
+    const startTime = new Date(event.start.split('T')[0]+event.start_time);
+    const currentTime = new Date();
+    const hoursDiff = (startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
+    if(hoursDiff < coach.notice_period_for_booking) {
+      toast.error(`You need to book before ${coach.notice_period_for_booking} hours.`);
       return;
     }
     const reqData = event;
@@ -259,6 +266,14 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
     }
     try {
       const coach: any = coaches.find((item: any) => item.id == data.coach_id);
+      const startTime = new Date(data.start);
+      const currentTime = new Date();
+      const hoursDiff = (startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
+      if(hoursDiff < coach.notice_period_for_cancellation) {
+        toast.error(`You need ${coach.notice_period_for_cancellation} hours to cancel.`);
+        return;
+      }
+
       if (coach.enable_payment === 'disabled') {
         const res = await deleteEvent(data.id);
         if (res)

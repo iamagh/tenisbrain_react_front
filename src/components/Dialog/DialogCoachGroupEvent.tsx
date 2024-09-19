@@ -23,6 +23,7 @@ import { loadingMessage, convertDateStringToYYMMDD } from "utils/others";
 
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "store";
+import { LayoutLoading } from "components/LayoutLoading";
 
 interface DialogCoachEventProps {
   isOpen: boolean;
@@ -46,7 +47,7 @@ const DialogCoachGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, 
   const [contents, setContents] = useState([]);
   const [tabActive, setTabActive] = useState('detail');
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [repeated, setRepeated] = useState<any>({
     status: 'norepeat',
@@ -120,7 +121,9 @@ const DialogCoachGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, 
         duration: "60 minutes",
         start_time: times[0],
         start: pickedDate,
-        product_price: 10
+        product_price: 10,
+        discount: 0,
+        unit: 0,
       })
     } else {
       setGroupEvent({ ...data })
@@ -180,6 +183,7 @@ const DialogCoachGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, 
     }
     /** --- check repeated date */
     try {
+      setLoading(true);
       if (data.id) {
         reqData.start = reqData.start.split("T")[0];
         await updateEvent(data.id, reqData);
@@ -198,6 +202,7 @@ const DialogCoachGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, 
         await createEvent(reqData);
         toast.success('Created New Event successfully.');
       }
+      setLoading(false);
     } catch (err: any) {
       toast.error(err.message || 'The error is occur while hanlding')
     }
@@ -209,7 +214,9 @@ const DialogCoachGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, 
   const handleRemove = async () => {
     // remove event
     try {
+      setLoading(true);
       const res = await deleteEvent(data.id);
+      setLoading(false);
       onOK();
       onClose();
     } catch (err: any) {
@@ -239,7 +246,8 @@ const DialogCoachGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, 
       open={isOpen}
       onClose={handleClose}
     >
-      <div className="min-h-screen px-4 text-center">
+      <div className="min-h-screen px-4 text-center relative">
+        <LayoutLoading show={loading} />
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
         <span
@@ -345,6 +353,31 @@ const DialogCoachGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, 
                         value={groupEvent.product_price}
                         onChange={(e) => setGroupEvent({ ...groupEvent, product_price: e.target.value })}
                       />
+                    </div>
+                    <div className="flex justify-between items-center gap-2">
+                      <div>
+                        <Label>Discount Rate</Label>
+                        <Input
+                          name="discount"
+                          className="mt-1.5"
+                          placeholder="10.00"
+                          prefix="%"
+                          type="number"
+                          value={groupEvent.discount}
+                          onChange={(e) => setGroupEvent({ ...groupEvent, discount: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label>Unit</Label>
+                        <Input
+                          name="discount"
+                          className="mt-1.5"
+                          placeholder="6"
+                          type="number"
+                          value={groupEvent.unit}
+                          onChange={(e) => setGroupEvent({ ...groupEvent, unit: e.target.value })}
+                        />
+                      </div>
                     </div>
 
                     {/* --- add repeated field for creating new group class event */}

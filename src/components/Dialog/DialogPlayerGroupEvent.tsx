@@ -24,6 +24,7 @@ import { loadingMessage, convertDateStringToYYMMDD } from "utils/others";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import StripeModal from "components/StripeModal";
 import { cancelPaidProduct } from "services/shared/payment";
+import { LayoutLoading } from "components/LayoutLoading";
 
 const stripePromise: Promise<Stripe | null> = loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
 
@@ -54,7 +55,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
 
   const [repeated, setRepeated] = useState<boolean>(false);
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [originPlayers, setOriginPlayers] = useState<number>(0);
 
@@ -173,6 +174,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         reqData.booked_dates = [];
       }
       setReqEventData(reqData)
+      setLoading(true)
       if (coach.enable_payment === 'disabled') {
         reqData.transaction_id = "";
         await updateEvent(data.id, reqData);
@@ -184,9 +186,11 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
           const result = await getAllEventSeries(data.event_series);
           const event_series = result.events;
           const availableEvents = event_series.filter((v:any) => new Date(v.start_time) >= new Date(data.start));
-          reqData.product_price = reqData.product_price * availableEvents.length;
+          reqData.product_price = reqData.product_price * availableEvents.length * (availableEvents.length >= reqData.unit ? (100 - reqData.discount) / 100 : 1);
         }
         if (data.id) {
+          console.log('paidTxId',paidTxId)
+          console.log('typeof paidTxId',typeof paidTxId)
           if (typeof paidTxId == "undefined") {
             setOpenStripeModal(true);
             onOK()
@@ -207,6 +211,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
           }
         }
       }
+      setLoading(false)
     } catch (err: any) {
       toast.error(err.message);
       setError(err.message || 'The error is occur while hanlding');
@@ -278,7 +283,8 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         open={isOpen}
         onClose={handleClose}
       >
-        <div className="min-h-screen px-4 text-center">
+        <div className="min-h-screen px-4 text-center relative">
+          <LayoutLoading show={loading} />
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
           <span
@@ -419,6 +425,14 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
                       <div>
                         <Label>Price</Label>
                         <Input className="mt-1" defaultValue={data.product_price} readOnly={true} />
+                      </div>
+                      <div>
+                        <Label>Discount Rate</Label>
+                        <Input className="mt-1" defaultValue={data.discount} readOnly={true} />
+                      </div>
+                      <div>
+                        <Label>Unit</Label>
+                        <Input className="mt-1" defaultValue={data.unit} readOnly={true} />
                       </div>
 
                       {/* --- flag to apply for entire serialized class or not */}
