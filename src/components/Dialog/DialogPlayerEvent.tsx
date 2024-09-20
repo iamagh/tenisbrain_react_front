@@ -52,7 +52,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
   const [reqEventData, setReqEventData] = useState<any>({});
   const [bookCount, setBookCount] = useState(0);
   const [paidProducts, setPaidProducts] = useState<any>([]);
-  // const [paidTxId, setPaidTxId] = useState<string>("");
+  const [paidTxId, setPaidTxId] = useState<string>("");
 
   const closeStripeModal = () => {
     setOpenStripeModal(false);
@@ -96,7 +96,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       setMembers(updatedMembers);
       setEventMembers(res_members.all_members);
       setSelectedProduct(products.find((product: any) => product.id == data.product_id) || products[0]);
-      // setPaidTxId(data.players[0]?.transaction_id)
+      setPaidTxId(data.id? data.players[0]?.transaction_id : null)
 
       setEvent({
         group_size: '1',
@@ -151,9 +151,10 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
   }
   const handleSelectMember = (checked: boolean, member: any) => {
     let newplayers = event?.players || [];
-    const player = members.find((item: any) => item.id == member.id);
+    newplayers.map((v:any ) => {v.checked = true})
+    const player:any = members.find((item: any) => item.id == member.id);
     if (checked) {
-      newplayers = [...newplayers, player]
+      newplayers = [...newplayers, {...player, checked: true}]
     } else {
       newplayers = event.players.filter((item: any) => item.id != member.id)
     }
@@ -161,6 +162,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       ...event,
       players: newplayers
     })
+    console.log('newplayers',newplayers)
     setMembers((prevMembers: any) =>
       prevMembers.map((item: any) =>
         item.id === member.id ? { ...item, checked, selected: checked } : item
@@ -175,7 +177,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
   const handleSubmit = async () => {
     const checkedCount = members.filter((member: any) => member.checked == true).length;
     const coach: any = coaches.find((item: any) => item.id == event.coach_id);
-    if (!event.players) {
+    if (!checkedCount) {
       toast.error('Please select players');
       return;
     }
@@ -187,6 +189,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       return;
     }
     const reqData = event;
+    reqData.dataId = data.id;
     reqData.group = false;
     reqData.repeat_status = 'undefined';
     reqData.isDelete = false;
@@ -230,6 +233,8 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
         if (data.id) {
           reqData.repeat = selectedPaidProduct.repeat;
           reqData.transaction_id = selectedPaidProduct.payment_intent_id;
+          console.log(reqData)
+          // setOpenStripeModal(true);
           const res = await updateEvent(data.id, reqData);
           toast.success('Updated Event successfully.');
         } else {
@@ -281,6 +286,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       } else {
         setLoading(false)
         const selectedPaidProduct = paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id);
+        console.log('selectedPaidProduct',selectedPaidProduct)
         const cancelRes = await cancelPaidProduct(selectedPaidProduct?.payment_intent_id)
         console.log(cancelRes, '---> cancelRes')
         if (cancelRes) {
@@ -498,6 +504,9 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
         coachId={data.coach_id}
         selectedProduct={selectedProduct}
         reqEventData={reqEventData}
+        cancelPaidProduct={cancelPaidProduct}
+        paidTxId={paidTxId}
+        members={members}
       />}
     </>
   );

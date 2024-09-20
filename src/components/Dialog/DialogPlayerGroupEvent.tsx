@@ -25,6 +25,7 @@ import { loadStripe, Stripe } from "@stripe/stripe-js";
 import StripeModal from "components/StripeModal";
 import { cancelPaidProduct } from "services/shared/payment";
 import { LayoutLoading } from "components/LayoutLoading";
+import ButtonSecondary from "shared/Button/ButtonSecondary";
 
 const stripePromise: Promise<Stripe | null> = loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
 
@@ -136,6 +137,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       })
     } else {
       setGroupEvent(data);
+      console.log('data',data)
       const originTx = data.players.filter((player: any) => player.is_repeat === false).map((player: any) => player.transaction_id);
       if (originTx.length > 0) {
         setPaidTxId(originTx[0])
@@ -150,10 +152,10 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
     }
   }, [isOpen, data]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (leave:boolean = false) => {
     groupEvent.players = members.filter((member: any) => member.checked == true);
     const checkedCount = groupEvent.players.length;
-    if (checkedCount === 0) {
+    if (checkedCount === 0 && !leave) {
       toast.error('Please select at least one player.');
       return;
     }
@@ -199,13 +201,23 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
             onClose();
           } else {
             reqData.transaction_id = paidTxId;
-            if (checkedCount == 0) {
+            if (leave) {
               reqData.isDelete = true;
               reqData.repeat_status = data.repeated
+              reqData.players = members.map((v:any) => {
+                v.checked =false;
+                return v;
+              });
               const cancelRes = await cancelPaidProduct(paidTxId)
               await updateEvent(data.id, reqData);
             } else {
-              await updateEvent(data.id, reqData);
+              reqData.repeat_status = data.repeated
+              if(reqData.players.length !== data.players.length)
+                setOpenStripeModal(true);
+              else {
+                reqData.players = members;
+                await updateEvent(data.id, reqData);
+              }
             }
             onClose();
             onOK()
@@ -481,11 +493,19 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
 
                 <div className="p-5 bg-neutral-50 dark:bg-neutral-900 dark:border-t dark:border-neutral-800 flex items-center justify-between">
                   <ButtonPrimary
-                    onClick={handleSubmit}
+                    onClick={() => handleSubmit(false)}
                     sizeClass="px-4 py-2 sm:px-5"
                   >
-                    Enter / Leave
+                    Enter
                   </ButtonPrimary>
+                  {paidTxId && (
+                    <ButtonSecondary
+                      onClick={() => handleSubmit(true)}
+                      sizeClass="px-4 py-2 sm:px-5"
+                    >
+                      Leave
+                    </ButtonSecondary>
+                  )}
                   <ButtonThird
                     onClick={() => {
                       onClose();
@@ -508,6 +528,9 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         coachId={data.coach_id}
         selectedProduct={selectedProduct}
         reqEventData={reqEventData}
+        cancelPaidProduct={cancelPaidProduct}
+        paidTxId={paidTxId}
+        members={members}
       />}
     </>
   );

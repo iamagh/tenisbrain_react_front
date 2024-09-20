@@ -14,9 +14,12 @@ interface Props {
   coachId: string;
   selectedProduct: any;
   reqEventData: any;
+  cancelPaidProduct?: Function;
+  paidTxId?: string;
+  members?: any;
 }
 
-const StripeModal: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, coachId, selectedProduct, reqEventData }) => {
+const StripeModal: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, coachId, selectedProduct, reqEventData,cancelPaidProduct,paidTxId, members }) => {
   return (
     <Elements stripe={stripePromise} >
       <MyComponent
@@ -26,6 +29,9 @@ const StripeModal: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
         coachId={coachId}
         selectedProduct={selectedProduct}
         reqEventData={reqEventData}
+        cancelPaidProduct={cancelPaidProduct}
+        paidTxId={paidTxId}
+        members={members}
       />
     </Elements>
   )
@@ -49,7 +55,7 @@ const formatDate = (dateTimeStr:string) => {
   return `${month} ${day}, ${year}, ${formattedHour}:${minutes} ${ampm}`;
 };
 
-const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, coachId, selectedProduct, reqEventData }) => {
+const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, coachId, selectedProduct, reqEventData, cancelPaidProduct, paidTxId, members }) => {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -98,6 +104,11 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
           repeat: reqEventData.repeat_status == 'undefined' ? privateType : reqEventData.repeat_status,
           startTime: reqEventData.start,
         };
+        if(paidTxId && cancelPaidProduct) {
+          await cancelPaidProduct(paidTxId);
+          const deletePlayers = members.map((v:any) => ({...v, checked: false}));
+          await updateEvent(reqEventData.dataId, {...reqEventData, players: deletePlayers, isDelete: true});
+        }
         const res = await createPayment(data);
         reqEventData.transaction_id = res.paymentIntent.id;
         if (res.success) {
@@ -173,6 +184,7 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
                 {reqEventData.repeat_status && reqEventData.repeat_status !== "undefined" ? `${formatDate(reqEventData.start)} - ${formatDate(reqEventData.event_last_time)}` : formatDate(reqEventData.start)}
               </div>
               <form onSubmit={handleSubmit} className="payment-form">
+
                 <h2>Complete Your Payment</h2>
                 <div className="form-group">
                   <CardElement className="card-element mb-5" />

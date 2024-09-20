@@ -100,6 +100,7 @@ const PagePlayerCalenda: React.FC = () => {
         const my_members = await getAllMembers();
         setMyMembers(my_members.members);
         const data = await getAllEvents();
+        console.log('all events', data)
         const group_events = data.group_events;
         group_events.forEach((group_event: any) => {
           if (!group_event.players[0]?.is_paid) {
