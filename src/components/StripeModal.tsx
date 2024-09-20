@@ -170,7 +170,7 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
             <>
               <div className="relative text-center">
                 <button onClick={onRequestClose} className="absolute left-0">Close</button>
-                {reqEventData.repeat_status ? `${formatDate(reqEventData.start)} - ${formatDate(reqEventData.event_last_time)}` : formatDate(reqEventData.start)}
+                {reqEventData.repeat_status && reqEventData.repeat_status !== "undefined" ? `${formatDate(reqEventData.start)} - ${formatDate(reqEventData.event_last_time)}` : formatDate(reqEventData.start)}
               </div>
               <form onSubmit={handleSubmit} className="payment-form">
                 <h2>Complete Your Payment</h2>
