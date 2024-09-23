@@ -3,9 +3,10 @@ import { CardElement, Elements, useElements, useStripe } from '@stripe/react-str
 import React, { FC, FormEvent, useState } from "react";
 import { toast } from "react-hot-toast";
 import { createEvent, updateEvent } from "services/player/events";
-import { createPayment } from 'services/shared/payment';
+import { createPayment, updatePaidProductFields } from 'services/shared/payment';
 import Radio from "shared/Radio/Radio";
 import './PaymentForm.css';
+import { deleteEvent } from "services/coach/events";
 
 interface Props {
   stripePromise: any;
@@ -93,7 +94,7 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
       try {
         const seriesPrice = selectedProduct.price * selectedProduct.unit * (100 - selectedProduct.discount_percent) / 100;
 
-        const data = {
+        const data:Record<string,any> = {
           eventId: reqEventData.dataId,  /// must check
           paymentMethodId: paymentMethod.id,
           coachId: coachId,
@@ -103,12 +104,16 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
           group: reqEventData.group,
           repeat: reqEventData.repeat_status == 'undefined' ? privateType : reqEventData.repeat_status,
           startTime: reqEventData.start,
+          book_count: reqEventData.players.length
         };
         if(paidTxId && cancelPaidProduct) {
           await cancelPaidProduct(paidTxId);
           const deletePlayers = members.map((v:any) => ({...v, checked: false}));
-          await updateEvent(reqEventData.dataId, {...reqEventData, players: deletePlayers, isDelete: true});
+          if(reqEventData.group)
+            await updateEvent(reqEventData.dataId, {...reqEventData, players: deletePlayers, isDelete: true});
+          else await deleteEvent(reqEventData.dataId);
         }
+        data['package_count'] = data.repeat ? selectedProduct.unit : 1
         const res = await createPayment(data);
         reqEventData.transaction_id = res.paymentIntent.id;
         if (res.success) {
@@ -118,6 +123,7 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
             toast.success('Updated Event successfully.');
           } else {
             const response = await createEvent(reqEventData);
+            await updatePaidProductFields(res.paymentIntent.id, {event_id: response.event.id})
             toast.success('Created New Event successfully.');
           }
           onRequestClose();
@@ -181,7 +187,7 @@ const MyComponent: FC<Props> = ({ stripePromise, modalIsOpen, onRequestClose, co
             <>
               <div className="relative text-center">
                 <button onClick={onRequestClose} className="absolute left-0">Close</button>
-                {reqEventData.repeat_status && reqEventData.repeat_status !== "undefined" ? `${formatDate(reqEventData.start)} - ${formatDate(reqEventData.event_last_time)}` : formatDate(reqEventData.start)}
+                {reqEventData.repeat_status && reqEventData.repeat_status !== "undefined" ? `${formatDate(reqEventData.start)} - ${formatDate(reqEventData.event_last_time)}` : formatDate(reqEventData.start.split('T')[0] + 'T' +  reqEventData.start_time)}
               </div>
               <form onSubmit={handleSubmit} className="payment-form">
 

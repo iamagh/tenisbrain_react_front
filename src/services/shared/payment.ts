@@ -44,6 +44,8 @@ export const createPayment = async (data: any): Promise<any> => {
       group: data.group,
       repeat: data.repeat,
       startTime: data.startTime,
+      package_count: data.package_count,
+      book_count : data.book_count,
     });
     return response.data;
   } catch (error: any) {
@@ -68,6 +70,16 @@ export const updatePaidProduct = async (productId: string): Promise<any> => {
     throw error.response ? error.response.data : error.message;
   }
 }
+
+export const updatePaidProductFields = async (paymentId: string, data:Record<string, any>): Promise<any> => {
+  try {
+    const response = await axiosInstance.post('/update_paid_product_fields', { paymentId, data });
+    return response.data; 
+  } catch (error: any) {
+    throw error.response ? error.response.data : error.message;
+  }
+}
+
 export const cancelPaidProduct = async (paymentIntentId: string): Promise<any> => {
   try {
     const response = await axiosInstance.post('/cancel_payment', { paymentIntentId });

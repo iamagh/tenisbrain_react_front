@@ -18,7 +18,7 @@ import Nav from "shared/Nav/Nav";
 import NavItem2 from "components/NavItem2";
 import ContentAccordion from "components/CustomComponents/ContentAccordion";
 import StripeModal from "components/StripeModal";
-import { cancelPaidProduct, updatePaidProduct } from "services/shared/payment";
+import { cancelPaidProduct,  updatePaidProductFields } from "services/shared/payment";
 import { getProductStatusForPlayer } from "services/shared/product";
 
 interface DialogPlayerEventProps {
@@ -49,6 +49,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
   const [error, setError] = useState<string | null>(null);
   const [openStripeModal, setOpenStripeModal] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<any>({});
+  const [selectedPaidProduct, setSelectedPaidProduct] = useState<any>({});
   const [reqEventData, setReqEventData] = useState<any>({});
   const [bookCount, setBookCount] = useState(0);
   const [paidProducts, setPaidProducts] = useState<any>([]);
@@ -127,7 +128,12 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       setPaidProducts(products);
     }
     getPaidProduct();
-  }, [player_id]);
+  }, [player_id,data]);
+
+  useEffect(() => {
+    const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.package_count > paidProduct.book_count) : null ;
+    setSelectedPaidProduct(paidProdcut)
+  },[selectedProduct, data, paidProducts])
 
   const getCoach = (coach_id: string) => {
     const coach: any = coaches.find((item: any) => item.id == coach_id);
@@ -181,9 +187,11 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       toast.error('Please select players');
       return;
     }
-    const startTime = new Date(event.start.split('T')[0]+event.start_time);
+    const startTime = new Date(event.start.split('T')[0]+'T'+event.start_time);
     const currentTime = new Date();
     const hoursDiff = (startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
+    console.log('hoursDiff',startTime.getTime(),currentTime.getTime() )
+    console.log('coach.notice_period_for_booking',coach.notice_period_for_booking)
     if(hoursDiff < coach.notice_period_for_booking) {
       toast.error(`You need to book before ${coach.notice_period_for_booking} hours.`);
       return;
@@ -222,7 +230,8 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
           repeat: false,
           payment_intent_id: null,
         };
-        const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id) : null ;
+        const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.package_count > paidProduct.book_count) : null ;
+        console.log('paidProdcut',paidProdcut)
         const selectedPaidProduct = paidProdcut || defaultProdcut;
         const isPaidProduct = !!paidProdcut;
         const product_price = isPaidProduct ? products.find((product: any) => product.id == selectedPaidProduct.product_id).price : selectedProduct.price;
@@ -232,19 +241,37 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
         reqData.product_price = product_price;
         if (data.id) {
           reqData.repeat = selectedPaidProduct.repeat;
-          reqData.transaction_id = selectedPaidProduct.payment_intent_id;
-          console.log(reqData)
+          reqData.transaction_id = paidTxId;
+          if(reqData.players.length != Object.keys(data.players).length) {
+            if (isPaidProduct && isSeries) {
+              if (book_count + (checkedCount - Object.keys(data.players).length) <= paidProdcut.package_count) {
+                // reqData.transaction_id = paidTxId;
+                reqData.transaction_id = selectedPaidProduct.payment_intent_id;
+                const updateRes = await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {book_count: book_count + (checkedCount - Object.keys(data.players).length)});
+                const res = await updateEvent(data.id, reqData);
+                return;
+              } else {
+                toast.error("Your credit expired, please pay again");
+                return;
+              }
+            } else {
+              setOpenStripeModal(true);
+            }
+          } else {
+            const res = await updateEvent(data.id, reqData);
+          }
           // setOpenStripeModal(true);
-          const res = await updateEvent(data.id, reqData);
+          // const res = await updateEvent(data.id, reqData);
           toast.success('Updated Event successfully.');
         } else {
           if (isPaidProduct && isSeries) {
-            if (book_count < 5) {
+            if (book_count + checkedCount <= paidProdcut.package_count) {
               // reqData.transaction_id = paidTxId;
               reqData.transaction_id = selectedPaidProduct.payment_intent_id;
-              const updateRes = await updatePaidProduct(selectedProduct.id);
+              const updateRes = await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {book_count: book_count + checkedCount});
               if (updateRes) {
                 const res = await createEvent(reqData);
+                await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {event_id: selectedPaidProduct.event_id + ',' + res.event.id});
               }
               toast.success('Created New Event successfully.');
             } else {
@@ -285,9 +312,18 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
           toast.success('The event has been removed');
       } else {
         setLoading(false)
-        const selectedPaidProduct = paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id);
-        console.log('selectedPaidProduct',selectedPaidProduct)
-        const cancelRes = await cancelPaidProduct(selectedPaidProduct?.payment_intent_id)
+        console.log(data)
+        const selectedPaidProduct = paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.event_id.includes(data.id));
+        console.log(paidProducts)
+        let cancelRes
+        if(selectedPaidProduct.repeat && selectedPaidProduct.book_count - data.players.length > 0) {
+          const event_ids = selectedPaidProduct.event_id.split(',')
+          const updateEventIds = event_ids.filter((v: string) => v != data.id).join(',')
+          console.log(updateEventIds)
+          await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {book_count: selectedPaidProduct.book_count - data.players.length, event_id: updateEventIds});
+          cancelRes = true;
+        }
+        else cancelRes = await cancelPaidProduct(selectedPaidProduct?.payment_intent_id)
         console.log(cancelRes, '---> cancelRes')
         if (cancelRes) {
           const res = await deleteEvent(data.id);
@@ -402,6 +438,11 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
                           ))}
                         </div>
                       </div>
+                      {selectedPaidProduct?.repeat && (
+                        <div className="text-right text-red-500">
+                            {`Remaining Credits: ${selectedPaidProduct.package_count - selectedPaidProduct.book_count}`}
+                        </div>
+                      )}
                       <div>
                         <Label>Event Coach</Label>
                         <Input className="mt-1.5" defaultValue={getCoach(data.coach_id)} readOnly={true} />

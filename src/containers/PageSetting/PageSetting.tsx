@@ -76,7 +76,8 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
         toast("Do you want to receive payments online?", { className: 'bg-blue-500 text-white font-bold py-2 px-4 rounded', autoClose: 5000 });
       if (signupProcess === 3)
         toast("Please set your hourly rate and any discounts for multiple bookings", { className: 'bg-blue-500 text-white font-bold py-2 px-4 rounded', autoClose: 5000 });
-
+      if (signupProcess === 4)
+        toast.success('Please set your pricing')
     }
   }, [showGuide]);
 
