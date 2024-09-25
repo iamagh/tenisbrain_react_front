@@ -38,6 +38,9 @@ const PageDashboard: React.FC = () => {
   const [data, setData]: any = useState({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeAccordionIndex, setActiveAccordionIndex] = useState<number | null>(null);
+  const [labels, setLabels] = useState<string[]>([]);
+  const [line_data, setLine_data] = useState<any>(null);
 
   const chart_data = {
     labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
@@ -79,25 +82,40 @@ const PageDashboard: React.FC = () => {
     },
   };
 
-  const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
 
-  const line_data = {
-    labels,
-    datasets: [
-      {
-        label: 'Classes',
-        data: labels.map(() => Math.random() * 100),
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      },
-      {
-        label: 'Student',
-        data: labels.map(() => Math.random() * 100),
-        borderColor: 'rgb(53, 162, 235)',
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-      },
-    ],
-  };
+
+  useEffect(() => {
+    const _labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+    const _line_data = {
+      labels: _labels,
+      datasets: [
+        {
+          label: 'Classes',
+          data: _labels?.map(() => Math.random() * 100),
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        },
+        {
+          label: 'Student',
+          data: _labels?.map(() => Math.random() * 100),
+          borderColor: 'rgb(53, 162, 235)',
+          backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        },
+        {
+          label: 'Revenue',
+          data: _labels?.map(() => Math.random() * 100),
+          borderColor: 'rgb(3, 62, 135)',
+          backgroundColor: 'rgba(3, 62, 135, 0.5)',
+        },
+      ],
+    };
+    setLabels(_labels);
+    setLine_data(_line_data);
+  }, []);
+
+  useEffect(() => {
+    console.log(line_data, "------------")
+  }, [line_data])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,6 +138,14 @@ const PageDashboard: React.FC = () => {
     }
   }, [error]);
 
+  const handleAccordionToggle = (index: number) => {
+    if (activeAccordionIndex === index) {
+      setActiveAccordionIndex(null); // Close if already open
+    } else {
+      setActiveAccordionIndex(index); // Open the clicked accordion
+    }
+  };
+
   return (
     <div className="nc-Page404">
       <Helmet>
@@ -132,7 +158,8 @@ const PageDashboard: React.FC = () => {
           <div className="flex flex-row flex-nowrap gap-x-2 bg-gray-200 p-5">
             <CardDashboard name="COMPLETED" desc={data?.completed_sessions?.length || '0'} size="large" />
             <CardDashboard name="UPCOMING" desc={data?.upcoming_sessions?.length || '0'} size="large" />
-            <CardDashboard name="PLAYERS" desc={"3"} size="large" />
+            <CardDashboard name="PLAYERS" desc={data?.player_list?.length || '0'} size="large" />
+            <CardDashboard name="Revenue" desc={data?.paid_group_product?.reduce((sum: number, payment: any) => sum + payment.amount, 0) + data?.paid_product?.reduce((sum: number, payment: any) => sum + payment.amount, 0)} size="large" />
           </div>
           <div className="min-h-screen bg-gray-100 p-5">
             <div className="bg-white shadow rounded-lg p-6">
@@ -170,11 +197,68 @@ const PageDashboard: React.FC = () => {
 
               </div>
             </div>
-            <div className="flex flex-row flex-nowrap gap-x-2 bg-gray-200 p-5">
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold text-gray-700 my-2">Players Info</h2>
+              <table className="w-full table-auto text-left">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="px-4 py-2">#</th>
+                    <th className="px-4 py-2">Title</th>
+                    <th className="px-4 py-2">Data</th>
+                    <th className="px-4 py-2">Group Size</th>
+                    <th className="px-4 py-2">Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data?.completed_sessions?.map((event: any, index: number) => (
+                    <>
+                      <tr onClick={() => handleAccordionToggle(index)} key={event.id} className={index % 2 === 0 ? 'bg-gray-100 cursor-pointer' : 'cursor-pointer'}>
+                        <td className="px-4 py-2">{index + 1}</td>
+                        <td className="px-4 py-2">{event.title}</td>
+                        <td className="px-4 py-2">{new Date(event.start).toLocaleString()}</td>
+                        <td className="px-4 py-2">{event.group_size}</td>
+                        <td className="px-4 py-2">{event.duration}</td>
+                      </tr>
+                      {activeAccordionIndex === index && (
+                        <tr className="p-4">
+                          <td></td>
+                          <td colSpan={4} className="pl-8">
+                            <table className="w-full table-auto text-left">
+                              <thead>
+                                <tr className="">
+                                  <th className="px-4 py-2">#</th>
+                                  <th className="px-4 py-2">Name</th>
+                                  <th className="px-4 py-2">Playing Hand</th>
+                                  <th className="px-4 py-2">Gender</th>
+                                  <th className="px-4 py-2">Date of Birth</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {event.players?.map((player: any, idx: number) => (
+                                  <tr key={player.id}>
+                                    <td className="px-4 py-2">{idx + 1}</td>
+                                    <td className="px-4 py-2">{`${player.first_name} ${player.last_name}`}</td>
+                                    <td className="px-4 py-2">{player.playing_hand}</td>
+                                    <td className="px-4 py-2">{player.gender}</td>
+                                    <td className="px-4 py-2">{player.birthday}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-row flex-nowrap gap-x-2 bg-gray-200 p-5 mt-8">
               {/* <Pie data={chart_data} /> */}
-              <Line options={options} data={line_data} />
+              {line_data && <Line options={options} data={line_data} />}
             </div>
           </div>
+
           <div className="pt-8">
             <ButtonPrimary href="/">Return Home Page</ButtonPrimary>
           </div>
