@@ -41,6 +41,7 @@ interface DialogCoachEventProps {
 }
 
 const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products }) => {
+  console.log("------ group data: ", data)
   const eData = new Date(data.date).toDateString();
   const pickedDate = convertDateStringToYYMMDD(data.date);
 
@@ -63,6 +64,8 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [paidTxId, setPaidTxId] = useState<string>("");
 
+
+  
   const closeStripeModal = () => {
     setOpenStripeModal(false)
     onOK()
@@ -108,6 +111,9 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
   ];
 
   useEffect(() => {
+    console.log("DialogPlayerGroupEvent useEffect");
+
+    
     if (!isOpen) return;
     /** --- get all members from api */
     const fetchContent = async () => {
@@ -123,7 +129,11 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       setMembers(updatedMembers);
     }
 
+    
+
+    console.log("DialogPlayerGroupEvent before fetchContent");
     fetchContent();
+    console.log("DialogPlayerGroupEvent after fetchContent", data);
     if (typeof data.id === 'undefined') {
       console.log('data undefined')
       setGroupEvent({
@@ -137,7 +147,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       })
     } else {
       setGroupEvent(data);
-      console.log('data',data)
+      console.log('data from server ~~~~~~~~~~',data)
       const originTx = data.players.filter((player: any) => player.is_repeat === false).map((player: any) => player.transaction_id);
       if (originTx.length > 0) {
         setPaidTxId(originTx[0])

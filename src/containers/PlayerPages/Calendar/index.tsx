@@ -15,7 +15,7 @@ import {
   formatDate,
 } from '@fullcalendar/core'
 import DialogPlayerEvent from "components/Dialog/DialogPlayerEvent";
-import DialogPlayerGroupEvent from "components/Dialog/DialogPlayerGroupEvent";
+import DialogPlayerGroupEvent from "components/Dialog/DialogPlayerGroupEvent/index";
 import Chatting from "components/Chatting";
 import Guide from "components/Guide/Guide";
 
@@ -176,6 +176,7 @@ const PagePlayerCalenda: React.FC = () => {
     openDialogEvent();
   }
 
+
   const handleEventClick = (info: any) => {
     /** --- start old codebase */
     // const selectedEvent: any = events.find((item: any) => item.id == info.event._def.publicId);
@@ -183,16 +184,23 @@ const PagePlayerCalenda: React.FC = () => {
     // console.log('Event clicked:', selectedEvent);
     // openDialogEvent();
     /** --- end old codebase */
+    console.log("@@@group event@@@: ", info)
     let unbookedEventCount = 0;
     const selectedEvent: any = events.find((item: any) => item.id == info.event._def.publicId);
     const group_events = events.filter((item: any) => item.event_series == selectedEvent.event_series);
     group_events.map((group_event: any) => {
       let isBooked = false;
+
+      /**
+       *TODO: filter data from the server   
+       */
       group_event.players.forEach((player: any) => {
         myMembers.some((my_member: any) => {
           if (my_member.id == player.id) { isBooked = true; }
         });
       });
+
+
       if (isBooked) {
         events.forEach((event: any) => {
           if (!Array.isArray(event.booked_dates)) {

@@ -80,16 +80,25 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       const date = new Date(data.start);
       const dayIndex = (date.getDay() + 6) % 7;// from Monday
 
+      // console.log("DialogPlayerEvent availabilitys", res_avails, data.id, coach_id);
+      // console.log("DialogPlayerEvent availabilitys ~~~ ", res_avails?.availability?.all())
+      
       const filteredAvails = res_avails?.availability?.filter((item: any) => item.days[dayIndex].checked);
       const formatedAvails = filteredAvails.concat({
         time: data.start_time,
         day: []
       });
-
+      // console.log("DialogPlayerEvent availabilitys filteredAvails , formatedAvails", filteredAvails, formatedAvails);
       formatedAvails.sort((a: any, b: any) => a.time?.localeCompare(b.time));
       setAvailabilitys(formatedAvails);
 
       const res_members = await getAllMembers();
+
+      console.log("@@@@@@: ", res_members.length())
+      if (res_members.length()) {
+
+      }
+
       const updatedMembers = res_members.members.map((member: any) => {
         const isChecked = data?.players?.some((player: any) => player.id === member.id);
         return { ...member, checked: isChecked };
@@ -119,6 +128,74 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
 
   }, [isOpen, data])
 
+  // useEffect(() => {
+  //   if (!isOpen) return;
+  
+  //   const fetchData = async () => {
+  //     try {
+  //       const [coachResponse, membersResponse] = await Promise.all([
+  //         getAllCoaches(),
+  //         getAllMembers(),
+  //       ]);
+  
+  //       setCoaches(coachResponse.coaches);
+  
+  //       const currentCoachId = data.id ? data.coach_id : coach_id;
+  //       const availabilityResponse = await getAllAvailabilitys(currentCoachId, data?.start);
+  
+  //       const date = new Date(data.start);
+  //       const dayIndex = (date.getDay() + 6) % 7; // Monday as start of week
+  
+  //       console.log("Day index:", dayIndex);
+  //       availabilityResponse?.availability?.forEach((item: any) => {
+  //         console.log("Item for day index:", item.days[dayIndex]);
+  //       });
+        
+  //       const filteredAvails = availabilityResponse?.availability?.filter((item: any) => item.days[dayIndex]?.checked) || [];
+  //       console.log("Full availabilityResponse:", availabilityResponse);
+        
+  
+  //       const formatedAvails = [
+  //         ...filteredAvails,
+  //         { time: data.start_time, day: [] }
+  //       ].sort((a: any, b: any) => a.time?.localeCompare(b.time));
+  
+  //       setAvailabilitys(formatedAvails);
+  
+  //       const updatedMembers = membersResponse.members.map((member: any) => ({
+  //         ...member,
+  //         checked: data?.players?.some((player: any) => player.id === member.id),
+  //       }));
+  
+  //       setMembers(updatedMembers);
+  //       setEventMembers(membersResponse.all_members);
+  //       setSelectedProduct(
+  //         products.find((product: any) => product.id === data.product_id) || products[0]
+  //       );
+  //       setPaidTxId(data.id ? data.players[0]?.transaction_id : null);
+  
+  //       setEvent({
+  //         group_size: '1',
+  //         description: 'Junior - Red Ball',
+  //         duration: '60 minutes',
+  //         start_time: formatedAvails.length ? formatedAvails[0].time : '',
+  //         select_players: [],
+  //         content: [],
+  //         select_coaches: data.coach_id,
+  //         ...data,
+  //       });
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
+  
+  //   fetchData();
+  
+  //   return () => {
+  //     setTabActive('detail');
+  //   };
+  // }, [isOpen, data, coach_id, products]);
+  
   useEffect(() => {
     const getPaidProduct = async () => {
       const res = await getProductStatusForPlayer(player_id);
@@ -217,6 +294,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
         reqData.product_price = "0";
 
         if (data.id) {
+          reqData.transaction_id = paidTxId;
           const res = await updateEvent(data.id, reqData);
           toast.success('Updated Event successfully.');
         } else {
@@ -523,6 +601,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
                         onClick={handleSubmit}
                         sizeClass="px-4 py-2 sm:px-5"
                       >
+                        
                         Apply
                       </ButtonPrimary>
                       <ButtonSecondary sizeClass="px-4 py-2 sm:px-5" onClick={handleDelete}>Delete</ButtonSecondary>
