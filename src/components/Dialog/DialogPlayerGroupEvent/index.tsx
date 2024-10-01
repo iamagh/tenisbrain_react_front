@@ -112,15 +112,14 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
 
   useEffect(() => {
     console.log("DialogPlayerGroupEvent useEffect");
-
-    
+       
     if (!isOpen) return;
     /** --- get all members from api */
     const fetchContent = async () => {
       // get all coaches
       const response: any = await getAllCoaches();
       setCoaches(response.coaches);
-
+        
       const res_members = await getAllMembers();
       const updatedMembers = res_members.members.map((member: any) => {
         const isChecked = data?.players.some((player: any) => player.id === member.id);
