@@ -10,6 +10,11 @@ import { updateSignupProcess, getSignupProcess } from "services/setting";
 import { updateProcess } from "utils/others";
 import Guide from "components/Guide/Guide";
 
+import { useDispatch } from 'react-redux';
+import { setPlayerCoach } from 'store/playerSlice'; // Adjust the path to your slice
+import { useSelector } from 'react-redux';
+import { RootState } from 'store'; // Adjust the path to your store
+
 type Coach = {
   id: number;
   first_name: string;
@@ -25,6 +30,9 @@ type Coach = {
 };
 
 const PagePlayerCoaches: React.FC = () => {
+  const dispatch = useDispatch();
+
+
   const navigate = useNavigate();
   const playerGuide = localStorage.getItem('signup_processs') || "0";
   const [selectedCoachId, setSelectedCoachId] = useState<number | null>(null);
@@ -35,8 +43,20 @@ const PagePlayerCoaches: React.FC = () => {
   const [showBio, setShowBio] = useState<{ [key: number]: boolean }>({});
   const [signupProcess, setSignupProcess] = useState(Number(playerGuide));
 
+  
   const handleCardClick = async (coachId: any) => {
     try {
+
+      const selectedCoach = {
+        id : coachId
+      }
+
+      dispatch(setPlayerCoach(selectedCoach))
+      
+      
+
+
+
       setSelectedCoachId(coachId);
       localStorage.setItem('player-coach', coachId)
       const res = await updateCoach(coachId);

@@ -99,6 +99,9 @@ const PageCalenda: React.FC = () => {
   }
 
   useEffect(() => {
+
+    
+
     const userRole = localStorage.getItem('user-role');
     if (userRole != 'coach') {
       navigate('/player-calendar');
@@ -121,6 +124,8 @@ const PageCalenda: React.FC = () => {
 
     fetchEvents();
   }, [])
+
+
   const onOKDialogEvent = async () => {
     try {
       const data = await getAllEvents();

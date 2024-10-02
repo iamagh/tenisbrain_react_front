@@ -1,0 +1,1 @@
+export const OVER_CHECK_COUNT = "Sorry, the group is full."

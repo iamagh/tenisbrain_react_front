@@ -23,8 +23,10 @@ import { toast } from "react-toastify";
 
 import { getAllEvents } from "services/player/events";
 import { getProductsForCalendar } from "services/shared/product";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
+import { setMemberPlayers } from "store/playerSlice"
+
 import { getAllMembers } from "services/player/members";
 
 import { loadStripe, Stripe } from "@stripe/stripe-js";
@@ -72,6 +74,8 @@ const PagePlayerCalenda: React.FC = () => {
     unit:0 
   });
 
+  const dispatch = useDispatch()
+
   const renderEventContent = (eventContent: EventContentArg) => {
     const { event_type, start_time, end_time, players, group_size, group_event_member } = eventContent.event.extendedProps;
     const group_bg = group_event_member > 0 && players.length > 0 ? "bg-cyan-600" : "bg-cyan-400";
@@ -97,8 +101,19 @@ const PagePlayerCalenda: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        // const playerMembers = await get
+
+
         const my_members = await getAllMembers();
+
         setMyMembers(my_members.members);
+        dispatch(setMemberPlayers(my_members.members))
+        // console.log("my memberPlayers", my_members)
+
+        /**
+         * TODO: send coache id and date then get event data from server
+         */
+
         const data = await getAllEvents();
         console.log('all events', data)
         const group_events = data.group_events;

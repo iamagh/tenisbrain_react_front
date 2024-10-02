@@ -26,6 +26,11 @@ import StripeModal from "components/StripeModal";
 import { cancelPaidProduct } from "services/shared/payment";
 import { LayoutLoading } from "components/LayoutLoading";
 import ButtonSecondary from "shared/Button/ButtonSecondary";
+import { useSelector } from 'react-redux';
+import { RootState } from 'store/index'; // Assuming your store file is in the parent directory
+
+import EventPlayers from "./EventPlayers"
+
 
 const stripePromise: Promise<Stripe | null> = loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
 
@@ -40,11 +45,19 @@ interface DialogCoachEventProps {
   setRoomInfo: (param: any) => void;
 }
 
+const GetMemberPlayers = () => {
+  const memberPlayers = useSelector((state: RootState) => state.player.memberPlayers)
+  return memberPlayers
+}
+
+
 const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products }) => {
   console.log("------ group data: ", data)
+  const [currentMemberPlayers, setCurrentMemberPlayers] = useState([]);
+  // setCurrentMemberPlayers(data.players)
+  console.log("#########", currentMemberPlayers)
   const eData = new Date(data.date).toDateString();
   const pickedDate = convertDateStringToYYMMDD(data.date);
-
   const [groupEvent, setGroupEvent] = useState<any>({});
   const [coaches, setCoaches] = useState<any[]>([]);
   const [activeCoach, setActiveCoach] = useState(null);
@@ -66,6 +79,15 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
 
 
   
+
+  /**
+   * TODO:
+   *  Initial Data for dialog
+   */
+
+  const playerCoach = useSelector((state: RootState) => state.player.playerCoach);
+
+
   const closeStripeModal = () => {
     setOpenStripeModal(false)
     onOK()
@@ -110,17 +132,18 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
     "21:00",
   ];
 
+
   useEffect(() => {
-    console.log("DialogPlayerGroupEvent useEffect");
-       
-    if (!isOpen) return;
-    /** --- get all members from api */
     const fetchContent = async () => {
       // get all coaches
       const response: any = await getAllCoaches();
       setCoaches(response.coaches);
-        
+      console.log("----------------------");
+      console.log(playerCoach)
+      console.log(response.coaches)
+      console.log("---------------")
       const res_members = await getAllMembers();
+      console.log("### result from getAllMembers()  ####: ", res_members)
       const updatedMembers = res_members.members.map((member: any) => {
         const isChecked = data?.players.some((player: any) => player.id === member.id);
         return { ...member, checked: isChecked };
@@ -128,7 +151,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       setMembers(updatedMembers);
     }
 
-    
+
 
     console.log("DialogPlayerGroupEvent before fetchContent");
     fetchContent();
@@ -146,7 +169,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       })
     } else {
       setGroupEvent(data);
-      console.log('data from server ~~~~~~~~~~',data)
+      console.log('data from server ~~~~~~~~~~', data)
       const originTx = data.players.filter((player: any) => player.is_repeat === false).map((player: any) => player.transaction_id);
       if (originTx.length > 0) {
         setPaidTxId(originTx[0])
@@ -159,10 +182,10 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
     return () => {
       setTabActive('detail');
     }
-  }, [isOpen, data]);
+  }, [isOpen === true]);
 
-  const handleSubmit = async (leave:boolean = false) => {
-    groupEvent.players = members.filter((member: any) => member.checked == true);
+  const handleSubmit = async (leave: boolean = false) => {
+    groupEvent.players = members
     const checkedCount = groupEvent.players.length;
     if (checkedCount === 0 && !leave) {
       toast.error('Please select at least one player.');
@@ -193,17 +216,17 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         onOK()
         toast.success('Updated Event.');
       } else {
-        console.log('reqData.product_price',reqData.product_price)
+        console.log('reqData.product_price', reqData.product_price)
         if (repeated) {
           const result = await getAllEventSeries(data.event_series);
           const event_series = result.events;
-          const availableEvents = event_series.filter((v:any) => new Date(v.start_time) >= new Date(data.start));
+          const availableEvents = event_series.filter((v: any) => new Date(v.start_time) >= new Date(data.start));
           reqData.product_price = reqData.product_price * availableEvents.length * (availableEvents.length >= reqData.unit ? (100 - reqData.discount) / 100 : 1);
           reqData['event_last_time'] = availableEvents[availableEvents.length - 1].end_time;
         }
         if (data.id) {
-          console.log('paidTxId',paidTxId)
-          console.log('typeof paidTxId',typeof paidTxId)
+          console.log('paidTxId', paidTxId)
+          console.log('typeof paidTxId', typeof paidTxId)
           if (typeof paidTxId == "undefined") {
             setOpenStripeModal(true);
             onOK()
@@ -213,15 +236,12 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
             if (leave) {
               reqData.isDelete = true;
               reqData.repeat_status = data.repeated
-              reqData.players = members.map((v:any) => {
-                v.checked =false;
-                return v;
-              });
+              reqData.players = members
               const cancelRes = await cancelPaidProduct(paidTxId)
               await updateEvent(data.id, reqData);
             } else {
               reqData.repeat_status = data.repeated
-              if(reqData.players.length !== data.players.length)
+              if (reqData.players.length !== data.players.length)
                 setOpenStripeModal(true);
               else {
                 reqData.players = members;
@@ -236,41 +256,10 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       }
       setLoading(false)
     } catch (err: any) {
+      setLoading(false)
       toast.error(err.message);
       setError(err.message || 'The error is occur while hanlding');
     }
-  }
-
-  const isChecked = (member: any) => {
-    return groupEvent.players.some((item: any) => item.id == member.id);
-  }
-  const handleSelectMember = (checked: boolean, member: any) => {
-    let newplayers = groupEvent?.players || [];
-
-    const player = members.find((item: any) => item.id == member.id);
-    if (checked && newplayers.length == groupEvent.group_size) {
-      toast.error("Players couldn't be over group size");
-      return;
-    }
-
-    if (checked && newplayers.length < groupEvent.group_size) {
-      newplayers = [...newplayers, player];
-      setOriginPlayers((preview) => preview + 1)
-    } else {
-      newplayers = groupEvent.players.filter((item: any) => item.id != member.id);
-      setOriginPlayers((preview) => preview - 1)
-    }
-    setMembers((prevMembers: any) =>
-      prevMembers.map((item: any) =>
-        item.id === member.id ? { ...item, checked, selected: checked } : item
-      )
-    );
-    setGroupEvent((prevGroupEvent: any) => {
-      return {
-        ...prevGroupEvent,
-        players: newplayers
-      };
-    });
   }
 
   const getCoach = (coach_id: string) => {
@@ -372,28 +361,19 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
                           readOnly
                         />
                       </div>
-
-
                       {/* --- event players */}
-                      <div>
-                        <Label>Event Players</Label>
-                        {/* <Textarea className="mt-1.5" defaultValue={data.players?.map((player: any) => `${player.first_name} ${player.last_name} \n`)} readOnly={true} /> */}
-                        <div className="h-32 overflow-y-auto">
-                          {/* <Textarea className="mt-1.5" defaultValue={data.players?.map((player: any) => `${player.first_name} ${player.last_name} \n`)} readOnly={true} /> */}
-                          {members?.map((item: any, index: number) => (
-                            <div key={index} className="py-1">
-                              <Checkbox
-                                name={item.id}
-                                label={`${item.first_name} ${item.last_name}`}
-                                checked={isChecked(item)}
-                                onChange={(checked) =>
-                                  handleSelectMember(checked, item)
-                                }
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      {
+                        console.log("####### member players ######", currentMemberPlayers)
+                      }
+                      <EventPlayers
+                        maxPlayerCount={data.group_size}
+                        currentPlayers={data.players}
+                        memberPlayers={GetMemberPlayers()}
+                        onChangeMembers={ (newMembers: any) => {
+                          setMembers(newMembers)
+                          console.log("current memberPlayers: ", newMembers)
+                        }}
+                      />
                       {/* --- event coach */}
                       <div>
                         <Label>Event Coach</Label>

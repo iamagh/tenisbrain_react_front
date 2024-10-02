@@ -1,5 +1,8 @@
 import axiosInstance from 'services/interceptor';
 
+
+
+
 export const createEvent = async (eventData: any): Promise<any> => {
   try {
     const response = await axiosInstance.post(`/player/events/`, eventData);
@@ -12,6 +15,20 @@ export const createEvent = async (eventData: any): Promise<any> => {
 export const getEventById = async (eventId: string): Promise<any> => {
   try {
     const response = await axiosInstance.get(`/player/events/${eventId}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
+export const getCoachEvents = async (coachId: string): Promise<any> => {
+  try {
+    const response = await axiosInstance.get(`/player/events/${coachId}`);
+    /**
+     * TODO: set store's player state
+     * response data should have info for members of coach
+     * 
+     */
     return response.data;
   } catch (error: any) {
     throw error.response ? error.response.data : error.message;
