@@ -10,9 +10,18 @@ import {
   verifyToken
 } from "services/auth";
 
+import { setPlayerCoach, setMemberPlayers } from 'store/playerSlice'; // Import actions
+
+
+
+import { getCoachById } from "services/player/coches";
+
+
 interface AuthProviderProps {
   children: ReactNode;
 }
+
+
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -26,13 +35,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const token = localStorage.getItem("access-token");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token);
 
+  
+
   const login = useCallback((response: any) => {
+    console.log(response, '----> response')
     const { access, refresh } = response;
     setIsAuthenticated(true);
     localStorage.setItem("access-token", access);
     localStorage.setItem("refresh-token", refresh);
     if (response.role) {
       const { user, user_info, role, player_coach } = response;
+
+      getCoachById(player_coach).then((res) => {
+        if (res) {
+          setPlayerCoach(res.content)
+        } 
+      })
+
       localStorage.setItem("user", user);
       localStorage.setItem("player-coach", player_coach);
       localStorage.setItem("user-role", role);

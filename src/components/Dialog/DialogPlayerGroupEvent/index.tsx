@@ -1,17 +1,10 @@
 import { Dialog } from "@headlessui/react";
 import { FC, useState, useEffect } from "react";
-import Label from "components/Label/Label";
 import ButtonPrimary from "shared/Button/ButtonPrimary";
-import Input from "shared/Input/Input";
-import Select from "shared/Select/Select";
-import Checkbox from "shared/Checkbox/Checkbox";
 import ButtonThird from "shared/Button/ButtonThird";
-import Radiobox from "shared/Radio/Radio";
-
 import Nav from "shared/Nav/Nav";
 import NavItem2 from "components/NavItem2";
-import ContentAccordion from "components/CustomComponents/ContentAccordion";
-
+import { loadingMessage, convertDateStringToYYMMDD } from "utils/others";
 import { toast } from "react-toastify";
 
 import { deleteEvent, updateEvent, getAllEventSeries } from "services/player/events";
@@ -20,21 +13,23 @@ import { getAllCoaches } from "services/player/coches";
 
 import ChatButton from "components/Chatting/ChatButton";
 
-import { loadingMessage, convertDateStringToYYMMDD } from "utils/others";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import StripeModal from "components/StripeModal";
 import { cancelPaidProduct } from "services/shared/payment";
 import { LayoutLoading } from "components/LayoutLoading";
 import ButtonSecondary from "shared/Button/ButtonSecondary";
 import { useSelector } from 'react-redux';
-import { RootState } from 'store/index'; // Assuming your store file is in the parent directory
+import { RootState } from 'store/index';  // Assuming your store file is in the parent directory
+import {times} from "data/Constants";
 
-import EventPlayers from "./EventPlayers"
+import DialogDetailTab from "components/Dialog/DialogPlayerGroupEvent/DetailTab";
+import DialogContentTab from "components/Dialog/DialogPlayerGroupEvent/ContentTab";
 
+import { _Player } from "dataTypes/Player";
 
 const stripePromise: Promise<Stripe | null> = loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
 
-interface DialogCoachEventProps {
+export interface DialogCoachEventProps {
   isOpen: boolean;
   data?: any;
   onOK: () => void;
@@ -46,96 +41,34 @@ interface DialogCoachEventProps {
   setRoomInfo: (param: any) => void;
 }
 
-const GetMemberPlayers = () => {
-  const memberPlayers = useSelector((state: RootState) => state.player.memberPlayers)
-  return memberPlayers
-}
-
-
 const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products, onExit }) => {
-  console.log("------ group data: ", data)
-  const [currentMemberPlayers, setCurrentMemberPlayers] = useState([]);
-  // setCurrentMemberPlayers(data.players)
-  console.log("#########", currentMemberPlayers)
-  const eData = new Date(data.date).toDateString();
-  const pickedDate = convertDateStringToYYMMDD(data.date);
-  const [groupEvent, setGroupEvent] = useState<any>({});
-  const [coaches, setCoaches] = useState<any[]>([]);
-  const [activeCoach, setActiveCoach] = useState(null);
-  const [members, setMembers] = useState([]);
-  const [tabActive, setTabActive] = useState('detail');
-  const [onwerEmail, setOnwerEmail] = useState('');
-  const [openStripeModal, setOpenStripeModal] = useState<boolean>(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>({});
-  const [reqEventData, setReqEventData] = useState<any>({});
-
-  const [repeated, setRepeated] = useState<boolean>(false);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [originPlayers, setOriginPlayers] = useState<number>(0);
-
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [tabActive, setTabActive] = useState('detail');
   const [paidTxId, setPaidTxId] = useState<string>("");
+  const pickedDate = convertDateStringToYYMMDD(data.date);
+  const [groupEvent, setGroupEvent] = useState<any>(data);
+  const memberPlayers: _Player[] = useSelector((state: RootState) => state.player.memberPlayers)
+  const [repeated, setRepeated] = useState<boolean>(false);
 
 
-  
+  const coach = useSelector((state: RootState) => state.player.playerCoach);
 
-  /**
-   * TODO:
-   *  Initial Data for dialog
-   */
-
-  const playerCoach = useSelector((state: RootState) => state.player.playerCoach);
-
-
-  const closeStripeModal = () => {
-    setOpenStripeModal(false)
-    onOK()
-    onClose();
+  const tabs: { [key: string]: JSX.Element | null } = {
+    "detail": <DialogDetailTab
+      products={products}
+      data={data}
+    />,
+    "content": <DialogContentTab
+      groupEvent={data}
+    />,
+    "close": null
   }
-
-  const openModal = () => { setModalIsOpen(true); };
-  const closeModal = () => { setModalIsOpen(false); };
-
-  const [availabilitysState, setAvailabilitysState] = useState<string[]>([]);
-  const times: string[] = [
-    "06:00",
-    "06:30",
-    "07:00",
-    "07:30",
-    "08:00",
-    "08:30",
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-    "17:30",
-    "18:00",
-    "18:30",
-    "19:00",
-    "19:30",
-    "20:00",
-    "20:30",
-    "21:00",
-  ];
 
 
   useEffect(() => {
-
+    console.log("#########", data)
+    // setTabActive(isOpen?"detail":"close")
     if (typeof data.id === 'undefined') {
       console.log('data undefined')
       setGroupEvent({
@@ -149,30 +82,25 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       })
     } else {
       setGroupEvent(data);
-      console.log('data from server ~~~~~~~~~~', data)
+      console.log('data', data)
       const originTx = data.players.filter((player: any) => player.is_repeat === false).map((player: any) => player.transaction_id);
       if (originTx.length > 0) {
         setPaidTxId(originTx[0])
       } else {
         setPaidTxId(data.players[0]?.transaction_id);
       }
-      setOriginPlayers(data.players.length)
     }
-    /** --- set detailtab */
-    return () => {
-      setTabActive('detail');
-    }
-  }, [isOpen === true, tabActive]);
+  }, [isOpen])
 
-  const handleSubmit = async (leave: boolean = false) => {
-    groupEvent.players = members
+  const handleSubmit = async (leave:boolean = false) => {
+    groupEvent.players = memberPlayers.filter((member: any) => member.checked == true);
     const checkedCount = groupEvent.players.length;
     if (checkedCount === 0 && !leave) {
       toast.error('Please select at least one player.');
       return;
     }
 
-    const coach: any = coaches.find((item: any) => item.id == data.coach_id);
+    
     try {
       const reqData = groupEvent;
       reqData.group = true;
@@ -196,17 +124,17 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         onOK()
         toast.success('Updated Event.');
       } else {
-        console.log('reqData.product_price', reqData.product_price)
+        console.log('reqData.product_price',reqData.product_price)
         if (repeated) {
           const result = await getAllEventSeries(data.event_series);
           const event_series = result.events;
-          const availableEvents = event_series.filter((v: any) => new Date(v.start_time) >= new Date(data.start));
+          const availableEvents = event_series.filter((v:any) => new Date(v.start_time) >= new Date(data.start));
           reqData.product_price = reqData.product_price * availableEvents.length * (availableEvents.length >= reqData.unit ? (100 - reqData.discount) / 100 : 1);
           reqData['event_last_time'] = availableEvents[availableEvents.length - 1].end_time;
         }
         if (data.id) {
-          console.log('paidTxId', paidTxId)
-          console.log('typeof paidTxId', typeof paidTxId)
+          console.log('paidTxId',paidTxId)
+          console.log('typeof paidTxId',typeof paidTxId)
           if (typeof paidTxId == "undefined") {
             setOpenStripeModal(true);
             onOK()
@@ -216,12 +144,15 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
             if (leave) {
               reqData.isDelete = true;
               reqData.repeat_status = data.repeated
-              reqData.players = members
+              reqData.players = members.map((v:any) => {
+                v.checked =false;
+                return v;
+              });
               const cancelRes = await cancelPaidProduct(paidTxId)
               await updateEvent(data.id, reqData);
             } else {
               reqData.repeat_status = data.repeated
-              if (reqData.players.length !== data.players.length)
+              if(reqData.players.length !== data.players.length)
                 setOpenStripeModal(true);
               else {
                 reqData.players = members;
@@ -236,35 +167,9 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       }
       setLoading(false)
     } catch (err: any) {
-      setLoading(false)
       toast.error(err.message);
       setError(err.message || 'The error is occur while hanlding');
     }
-  }
-
-  const getCoach = (coach_id: string) => {
-    const coach: any = coaches.find((item: any) => item.id == coach_id);
-    if (coach) {
-      return `${coach.first_name} ${coach.last_name}`
-    } else {
-      return '';
-    }
-  }
-
-  const handleRepeatedRadio = (value: boolean) => {
-    if (typeof paidTxId == "undefined") {
-      setRepeated(value);
-    }
-  }
-
-  const handleClose = () => {
-    return;
-  }
-
-  const handleChangeProduct = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const productId = e.currentTarget.value;
-    setSelectedProduct(products.find((product: any) => product.id == productId))
-
   }
 
   return (
@@ -273,7 +178,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         as="div"
         className="fixed inset-0 z-[1000] overflow-y-auto"
         open={isOpen}
-        onClose={handleClose}
+        onClose={() => { }}
       >
         <div className="min-h-screen px-4 text-center relative">
           <LayoutLoading show={loading} />
@@ -291,7 +196,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
               as="h3"
               className="text-lg font-medium leading-6 text-gray-900 text-center"
             >
-              GROUP CLASS SCHEDULED - {eData}
+              GROUP CLASS SCHEDULED - {"eData"}
             </Dialog.Title>
 
             <div className="mt-4">
@@ -327,28 +232,31 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
                 </div>
 
                 <div className="flex-grow mt-10 md:mt-0 max-w-3xl space-y-6">
-                  
+                  {
+                    tabs[tabActive]
+                  }
                 </div>
 
                 <div className="p-5 bg-neutral-50 dark:bg-neutral-900 dark:border-t dark:border-neutral-800 flex items-center justify-between">
                   <ButtonPrimary
-                    onClick={() => handleSubmit(false)}
+                    onClick={()=> {
+                      handleSubmit(false)
+                    }}
                     sizeClass="px-4 py-2 sm:px-5"
                   >
                     Enter
                   </ButtonPrimary>
                   {paidTxId && (
                     <ButtonSecondary
-                      onClick={() => handleSubmit(true)}
+                      onClick={() => { }}
                       sizeClass="px-4 py-2 sm:px-5"
                     >
                       Leave
                     </ButtonSecondary>
                   )}
                   <ButtonThird
-                    onClick={ async () => {
+                    onClick={async () => {
                       onClose();
-                      setAvailabilitysState([]);
                     }}
                     sizeClass="px-4 py-2 sm:px-5"
                   >
@@ -360,19 +268,20 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
           </div>
         </div>
       </Dialog>
-      {openStripeModal && <StripeModal
-        stripePromise={stripePromise}
-        modalIsOpen={openStripeModal}
-        onRequestClose={closeStripeModal}
-        coachId={data.coach_id}
-        selectedProduct={selectedProduct}
-        reqEventData={reqEventData}
-        cancelPaidProduct={cancelPaidProduct}
-        paidTxId={paidTxId}
-        members={members}
-      />}
+      {/* {openStripeModal && <StripeModal
+         stripePromise={stripePromise}
+         modalIsOpen={openStripeModal}
+         onRequestClose={closeStripeModal}
+         coachId={data.coach_id}
+         selectedProduct={selectedProduct}
+         reqEventData={reqEventData}
+         cancelPaidProduct={cancelPaidProduct}
+         paidTxId={paidTxId}
+         members={members}
+       />} */}
     </>
-  );
-};
+  )
+}
+
 
 export default DialogPlayerGroupEvent;

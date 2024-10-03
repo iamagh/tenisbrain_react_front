@@ -1,13 +1,26 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+import { _Coach } from "dataTypes/Player";
 interface PlayerState {
-    playerCoach: string;
+    playerCoach: _Coach;
     memberPlayers: []
 }
 
 const initialState: PlayerState = {
-    playerCoach: '',
+    playerCoach: {
+        id: 0,
+        first_name: "",
+        last_name: "",
+        gender: "",
+        club_name: "",
+        club_address: "",
+        qualification: "",
+        profile_image: "",
+        email: "",
+        phone_no: "",
+        bio: ""
+    },
     memberPlayers: []
 }
 

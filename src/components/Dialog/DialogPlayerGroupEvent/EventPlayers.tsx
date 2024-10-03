@@ -4,6 +4,7 @@ import Label from "components/Label/Label";
 import { toast } from "react-toastify";
 
 import { OVER_CHECK_COUNT } from "data/messages"
+import { _Player } from 'dataTypes/Player';
 
 interface Player {
   id: string;
@@ -13,8 +14,8 @@ interface Player {
 
 interface EventPlayersProps {
   maxPlayerCount: number;
-  currentPlayers: Player[];
-  memberPlayers: Player[];
+  currentPlayers: _Player[];
+  memberPlayers: _Player[];
   onChangeMembers: any;
 }
 
@@ -46,15 +47,19 @@ const EventPlayers: React.FC<EventPlayersProps> = ({ maxPlayerCount, currentPlay
         return;
       }
       setSelectedMembers(checkArray);
-      onChangeMembers(checkArray);
+      // memberPlayers.find((player:_Player) => player.id === "id")
+      onChangeMembers(
+        checkArray.map((id) => (  
+          memberPlayers.find((player:_Player) => player.id === id)
+         )));
     } else {
       setSelectedMembers(selectedMembers.filter(id => id !== player.id));
-      onChangeMembers(selectedMembers.filter(id => id !== player.id));
+      onChangeMembers(
+        selectedMembers.map((id) => (  
+          memberPlayers.find((player:_Player) => player.id === id)
+         )));
     }
-    // console.log("##########result from Event ccheck", selectedMembers)
   };
-
-  
 
   useEffect(() => {
     setSelectedMembers(preSelectMembers.filter(e => e != undefined))

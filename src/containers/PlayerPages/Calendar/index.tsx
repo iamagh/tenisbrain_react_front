@@ -22,6 +22,7 @@ import Guide from "components/Guide/Guide";
 import { toast } from "react-toastify";
 
 import { getAllEvents } from "services/player/events";
+import { getCoachById } from "services/player/coches";
 import { getProductsForCalendar } from "services/shared/product";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
@@ -30,6 +31,7 @@ import { setMemberPlayers } from "store/playerSlice"
 import { getAllMembers } from "services/player/members";
 
 import { loadStripe, Stripe } from "@stripe/stripe-js";
+import { setPlayerCoach } from "store/userSlice";
 
 const stripePromise: Promise<Stripe | null> = loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
 
@@ -57,11 +59,14 @@ const PagePlayerCalenda: React.FC = () => {
   const [products, setProducts] = useState<any>([]);
   const [isOpenGroupEvent, setIsOpenGroupEvent] = useState<boolean>(false);
   const [myMembers, setMyMembers] = useState<any>([]);
-
+  const dispatch = useDispatch();
   const getProducts = useCallback(async () => {
     const res = await getProductsForCalendar(coach_id);
     setProducts(res?.products);
   }, [products]);
+
+  
+
 
   const [groupEventDialogData, setGroupEventDialogData] = useState({
     date: new Date(),
@@ -74,7 +79,7 @@ const PagePlayerCalenda: React.FC = () => {
     unit:0 
   });
 
-  const dispatch = useDispatch()
+  
 
   const renderEventContent = (eventContent: EventContentArg) => {
     const { event_type, start_time, end_time, players, group_size, group_event_member } = eventContent.event.extendedProps;
@@ -105,9 +110,10 @@ const PagePlayerCalenda: React.FC = () => {
 
 
         const my_members = await getAllMembers();
-
+        console.log("$$$$$", my_members)
         setMyMembers(my_members.members);
         dispatch(setMemberPlayers(my_members.members))
+        dispatch(setPlayerCoach(my_members.coach))
         // console.log("my memberPlayers", my_members)
 
         /**
@@ -282,11 +288,11 @@ const PagePlayerCalenda: React.FC = () => {
   }
 
   const exitDialogGroup = async() => {
-    setIsOpenGroupEvent(false);
+    // setisOpenGroupEvent(false);
   }
 
   const closeDialogGroup = async () => {
-    // setIsOpenGroupEvent(false);
+    setIsOpenGroupEvent(false);
     setIsOpenChatRooms(false);
     try {
       const data = await getAllEvents();
@@ -327,7 +333,7 @@ const PagePlayerCalenda: React.FC = () => {
       setChatRooms(data.chat_rooms);
       setOldChatRooms(data.chat_rooms);
       setLoading(false);
-      setIsOpenGroupEvent(false);
+      // // setisOpenGroupEvent(false);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
       setLoading(false);
@@ -485,6 +491,7 @@ const PagePlayerCalenda: React.FC = () => {
         setRoomInfo={setRoomInfo}
         rooms={chatRooms}
         isOpen={isOpenGroupEvent}
+        // isOpen={isOpenGroupEvent}
         data={groupEventDialogData}
         products={products}
         onOK={onOKDialogGroup}

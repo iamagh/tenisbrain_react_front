@@ -14,6 +14,7 @@ import { useDispatch } from 'react-redux';
 import { setPlayerCoach } from 'store/playerSlice'; // Adjust the path to your slice
 import { useSelector } from 'react-redux';
 import { RootState } from 'store'; // Adjust the path to your store
+import { _Coach } from "dataTypes/Player";
 
 type Coach = {
   id: number;
@@ -47,16 +48,14 @@ const PagePlayerCoaches: React.FC = () => {
   const handleCardClick = async (coachId: any) => {
     try {
 
-      const selectedCoach = {
-        id : coachId
+      const selectedCoach:_Coach = {
+        id : coachId,
+        first_name : coaches[coachId - 1].first_name,
+        last_name : coaches[coachId - 1].last_name
       }
 
       dispatch(setPlayerCoach(selectedCoach))
       
-      
-
-
-
       setSelectedCoachId(coachId);
       localStorage.setItem('player-coach', coachId)
       const res = await updateCoach(coachId);
