@@ -47,6 +47,7 @@ const ContentAccordion: FC<Props> = ({
   isCoach = true,
   handleContent = () => {},
 }) => {
+
   const [contentData, setContentData] = useState<any[]>([]);
 
   useEffect(() => {

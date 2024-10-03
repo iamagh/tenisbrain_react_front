@@ -281,7 +281,12 @@ const PagePlayerCalenda: React.FC = () => {
     setIsOpenGroupEvent(true);
   }
 
+  const exitDialogGroup = async() => {
+    setIsOpenGroupEvent(false);
+  }
+
   const closeDialogGroup = async () => {
+    // setIsOpenGroupEvent(false);
     setIsOpenChatRooms(false);
     try {
       const data = await getAllEvents();
@@ -330,6 +335,7 @@ const PagePlayerCalenda: React.FC = () => {
   };
 
   const closeDialogEvent = async () => {
+    setIsOpenEvent(false);
     setIsOpenChatRooms(false);
     try {
       const data = await getAllEvents();
@@ -483,6 +489,7 @@ const PagePlayerCalenda: React.FC = () => {
         products={products}
         onOK={onOKDialogGroup}
         onClose={closeDialogGroup}
+        onExit={exitDialogGroup}
       />
       <Chatting
         isOpen={isOpenChatRooms}

@@ -39,6 +39,7 @@ interface DialogCoachEventProps {
   data?: any;
   onOK: () => void;
   onClose: () => void;
+  onExit: () => void;
   products: any;
   setIsOpenChatRooms: (param: boolean) => void;
   rooms: any;
@@ -51,7 +52,7 @@ const GetMemberPlayers = () => {
 }
 
 
-const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products }) => {
+const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products, onExit }) => {
   console.log("------ group data: ", data)
   const [currentMemberPlayers, setCurrentMemberPlayers] = useState([]);
   // setCurrentMemberPlayers(data.players)
@@ -134,28 +135,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
 
 
   useEffect(() => {
-    const fetchContent = async () => {
-      // get all coaches
-      const response: any = await getAllCoaches();
-      setCoaches(response.coaches);
-      console.log("----------------------");
-      console.log(playerCoach)
-      console.log(response.coaches)
-      console.log("---------------")
-      const res_members = await getAllMembers();
-      console.log("### result from getAllMembers()  ####: ", res_members)
-      const updatedMembers = res_members.members.map((member: any) => {
-        const isChecked = data?.players.some((player: any) => player.id === member.id);
-        return { ...member, checked: isChecked };
-      });
-      setMembers(updatedMembers);
-    }
 
-
-
-    console.log("DialogPlayerGroupEvent before fetchContent");
-    fetchContent();
-    console.log("DialogPlayerGroupEvent after fetchContent", data);
     if (typeof data.id === 'undefined') {
       console.log('data undefined')
       setGroupEvent({
@@ -182,7 +162,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
     return () => {
       setTabActive('detail');
     }
-  }, [isOpen === true]);
+  }, [isOpen === true, tabActive]);
 
   const handleSubmit = async (leave: boolean = false) => {
     groupEvent.players = members
@@ -347,137 +327,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
                 </div>
 
                 <div className="flex-grow mt-10 md:mt-0 max-w-3xl space-y-6">
-                  {
-                    tabActive === 'detail' ? <>
-                      {/* --- group size */}
-                      <div>
-                        <Label>Group size - {data.group_size}</Label>
-                        <Input
-                          className="mt-1.5"
-                          value={`${groupEvent.players ? groupEvent.players.length : 0}/${data.group_size}`}
-                          type="text"
-                          min="3"
-                          max="20"
-                          readOnly
-                        />
-                      </div>
-                      {/* --- event players */}
-                      {
-                        console.log("####### member players ######", currentMemberPlayers)
-                      }
-                      <EventPlayers
-                        maxPlayerCount={data.group_size}
-                        currentPlayers={data.players}
-                        memberPlayers={GetMemberPlayers()}
-                        onChangeMembers={ (newMembers: any) => {
-                          setMembers(newMembers)
-                          console.log("current memberPlayers: ", newMembers)
-                        }}
-                      />
-                      {/* --- event coach */}
-                      <div>
-                        <Label>Event Coach</Label>
-                        <Input className="mt-1.5" defaultValue={getCoach(data.coach_id)} readOnly={true} />
-                      </div>
-                      {/* ---- select description */}
-                      <div>
-                        <Label>Select Description</Label>
-                        <Select
-                          className="mt-1.5"
-                          value={groupEvent.description}
-                          readOnly={true}
-                          onChange={handleChangeProduct}
-                        >
-                          {/* {products?.map((product: any, index: number) => (
-                            <option value={product.id} key={index}>{product.product}</option>
-                            ))} */}
-                          <option value={data.id} key={data.id}>{data.description}</option>
-                        </Select>
-                      </div>
-
-                      {/* --- start available times */}
-                      <div>
-                        <Label>Start Time</Label>
-                        <div className="mt-1 flex">
-                          <Select
-                            className="mt-1"
-                            readOnly={true}
-                            value={groupEvent.start_time}
-                          >
-                            {
-                              times.length > 0 ? times.map((time: any, index: number) => (
-                                <option key={index} value={time}>{time}</option>
-                              )) : <option>No available times</option>
-                            }
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* --- class duration 60 mins / 90 mins */}
-                      <div>
-                        <Label>Duaration</Label>
-                        <Select
-                          className="mt-1"
-                          readOnly={true}
-                          value={groupEvent.duration}
-                        >
-                          <option value="60 minutes">60 minutes</option>
-                          <option value="90 minutes">90 minutes</option>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Price</Label>
-                        <Input className="mt-1" defaultValue={data.product_price} readOnly={true} />
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <Label>Discount Rate</Label>
-                          <Input className="mt-1" defaultValue={data.discount} readOnly={true} />
-                        </div>
-                        <div>
-                          <Label>Unit</Label>
-                          <Input className="mt-1" defaultValue={data.unit} readOnly={true} />
-                        </div>
-                      </div>
-
-                      {/* --- flag to apply for entire serialized class or not */}
-                      {
-                        data.event_series != "NoSeries" && (
-                          <div>
-                            <Label>Repeated</Label>
-                            <div className="flex gap-2 mt-2">
-                              <Radiobox
-                                name="repeated"
-                                label="No repeat"
-                                id="norepeat"
-                                defaultChecked={!repeated}
-                                onChange={(e) => handleRepeatedRadio(false)}
-                              />
-                              <Radiobox
-                                name="repeated"
-                                label="Repeated"
-                                id="repeat"
-                                defaultChecked={repeated}
-                                onChange={(e) => handleRepeatedRadio(true)}
-                              />
-                            </div>
-                          </div>
-                        )
-                      }
-                    </> : <>
-                      {/* --- add content section */}
-                      <div>
-                        {/* <Label>Add Content</Label> */}
-                        <div className="mt-2 space-y-2">
-                          <ContentAccordion
-                            isCoach={false}
-                            contents={groupEvent.content}
-                            groupContent={groupEvent.content}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  }
+                  
                 </div>
 
                 <div className="p-5 bg-neutral-50 dark:bg-neutral-900 dark:border-t dark:border-neutral-800 flex items-center justify-between">
@@ -496,7 +346,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
                     </ButtonSecondary>
                   )}
                   <ButtonThird
-                    onClick={() => {
+                    onClick={ async () => {
                       onClose();
                       setAvailabilitysState([]);
                     }}
