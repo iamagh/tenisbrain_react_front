@@ -23,7 +23,7 @@ interface EventPlayersProps {
 const EventPlayers: React.FC<EventPlayersProps> = ({ maxPlayerCount, currentPlayers, memberPlayers, onChangeMembers }) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
-  const preSelectMembers:string[] = memberPlayers.map((member: any) => {
+  const preSelectMembers: string[] = memberPlayers.map((member: any) => {
     const res = currentPlayers.filter((player: any) => player.id == member.id);
     if (res.length > 0) {
       console.log("member in event players", member)
@@ -38,10 +38,10 @@ const EventPlayers: React.FC<EventPlayersProps> = ({ maxPlayerCount, currentPlay
   const handleSelectMember = (checked: boolean, player: Player) => {
 
     if (checked) {
-      const checkArray:string[] = [...selectedMembers, player.id]
-      console.log("length--------", currentPlayers.length  + checkArray.length - preSelectMembers.length)
+      const checkArray: string[] = [...selectedMembers, player.id]
+      console.log("length--------", currentPlayers.length + checkArray.length - preSelectMembers.length)
       console.log("length--------", currentPlayers.length)
-      const totalCount = currentPlayers.length  + checkArray.length - (preSelectMembers.filter(e => e != undefined)).length
+      const totalCount = currentPlayers.length + checkArray.length - (preSelectMembers.filter(e => e != undefined)).length
       if (totalCount > maxPlayerCount) {
         toast.error(OVER_CHECK_COUNT);
         return;
@@ -49,15 +49,19 @@ const EventPlayers: React.FC<EventPlayersProps> = ({ maxPlayerCount, currentPlay
       setSelectedMembers(checkArray);
       // memberPlayers.find((player:_Player) => player.id === "id")
       onChangeMembers(
-        checkArray.map((id) => (  
-          memberPlayers.find((player:_Player) => player.id === id)
-         )));
+        checkArray.map((id) => (
+          memberPlayers.find((player: _Player) => player.id === id)
+        )));
+      // console.log("***********", checkArray.map((id) => (
+      //   memberPlayers.find((player: _Player) => player.id === id)
+      // )))
     } else {
       setSelectedMembers(selectedMembers.filter(id => id !== player.id));
       onChangeMembers(
-        selectedMembers.map((id) => (  
-          memberPlayers.find((player:_Player) => player.id === id)
-         )));
+        selectedMembers.map((id) => (
+          memberPlayers.find((player: _Player) => player.id === id)
+        )));
+
     }
   };
 

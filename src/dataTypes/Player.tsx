@@ -25,6 +25,7 @@ export interface _Coach {
     email?: string;
     phone_no?: string;
     bio?: string;
+    enable_payment?: string;
 }
 
 

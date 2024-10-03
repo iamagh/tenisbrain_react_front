@@ -48,9 +48,12 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
   const [paidTxId, setPaidTxId] = useState<string>("");
   const pickedDate = convertDateStringToYYMMDD(data.date);
   const [groupEvent, setGroupEvent] = useState<any>(data);
-  const memberPlayers: _Player[] = useSelector((state: RootState) => state.player.memberPlayers)
   const [repeated, setRepeated] = useState<boolean>(false);
-
+  const [selectedProduct, setSelectedProduct] = useState<any>({});
+  const [reqEventData, setReqEventData] = useState<any>({});
+  const [openStripeModal, setOpenStripeModal] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [memberPlayers, setMemberPlayers] = useState<_Player[]>(useSelector((state: RootState) => state.player.memberPlayers));
 
   const coach = useSelector((state: RootState) => state.player.playerCoach);
 
@@ -58,13 +61,19 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
     "detail": <DialogDetailTab
       products={products}
       data={data}
+      sendGroupPlayers={(players: _Player[]) => setMemberPlayers(players)}
     />,
     "content": <DialogContentTab
       groupEvent={data}
     />,
     "close": null
   }
-
+  
+  const handleRepeatedRadio = (value: boolean) => {
+    if (typeof paidTxId == "undefined") {
+      setRepeated(value);
+    }
+  }
 
   useEffect(() => {
     console.log("#########", data)
@@ -94,7 +103,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
 
   const handleSubmit = async (leave:boolean = false) => {
     groupEvent.players = memberPlayers.filter((member: any) => member.checked == true);
-    const checkedCount = groupEvent.players.length;
+    const checkedCount = memberPlayers.length;
     if (checkedCount === 0 && !leave) {
       toast.error('Please select at least one player.');
       return;
@@ -144,7 +153,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
             if (leave) {
               reqData.isDelete = true;
               reqData.repeat_status = data.repeated
-              reqData.players = members.map((v:any) => {
+              reqData.players = memberPlayers.map((v:any) => {
                 v.checked =false;
                 return v;
               });
@@ -155,7 +164,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
               if(reqData.players.length !== data.players.length)
                 setOpenStripeModal(true);
               else {
-                reqData.players = members;
+                reqData.players = memberPlayers;
                 await updateEvent(data.id, reqData);
               }
             }

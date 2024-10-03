@@ -32,12 +32,12 @@ import { _Player } from "dataTypes/Player";
 import EventPlayers from "./EventPlayers"
 import { _Coach } from "dataTypes/Player";
 import {times} from "data/Constants";
-
 const stripePromise: Promise<Stripe | null> = loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
 
 export interface DialogDetailTabProps {
   products: any;
   data: any;
+  sendGroupPlayers: (players: _Player[]) => void;
 }
 
 const GetMemberPlayers= (): _Player[]  => {
@@ -46,7 +46,7 @@ const GetMemberPlayers= (): _Player[]  => {
 }
 
 
-const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data }) =>  {
+const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPlayers }) =>  {
   
   const [currentMemberPlayers, setCurrentMemberPlayers] = useState<_Player[]>(GetMemberPlayers());
   const coach: _Coach = useSelector((state: RootState) => state.player.playerCoach);
@@ -88,7 +88,11 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data }) =>  {
         maxPlayerCount={data.group_size}
         currentPlayers={data.players}
         memberPlayers={currentMemberPlayers}
-        onChangeMembers={setCurrentMemberPlayers}
+        onChangeMembers={(players: _Player[]) => {
+          setCurrentMemberPlayers(players);
+          console.log("players", players)
+          sendGroupPlayers(players);
+        }}
       />
       {/* --- event coach */}
       <div>
