@@ -68,6 +68,12 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
     />,
     "close": null
   }
+
+  const closeStripeModal = () => {
+    setOpenStripeModal(false)
+    onOK()
+    onClose();
+  }
   
   const handleRepeatedRadio = (value: boolean) => {
     if (typeof paidTxId == "undefined") {
@@ -277,7 +283,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
           </div>
         </div>
       </Dialog>
-      {/* {openStripeModal && <StripeModal
+      {openStripeModal && <StripeModal
          stripePromise={stripePromise}
          modalIsOpen={openStripeModal}
          onRequestClose={closeStripeModal}
@@ -286,8 +292,8 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
          reqEventData={reqEventData}
          cancelPaidProduct={cancelPaidProduct}
          paidTxId={paidTxId}
-         members={members}
-       />} */}
+         members={memberPlayers}
+       />}
     </>
   )
 }
