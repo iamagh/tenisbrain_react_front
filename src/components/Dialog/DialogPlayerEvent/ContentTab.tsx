@@ -17,8 +17,10 @@ const DialogContentTab: FC<DialogContentTabProps> = ({ groupEvent }) => {
                 <div className="mt-2 space-y-2">
                     <ContentAccordion
                         isCoach={false}
-                        contents={groupEvent.content}
-                        groupContent={groupEvent.content}
+                        // contents={groupEvent.content}
+                        contents={[]}
+                        // groupContent={groupEvent.content}
+                        groupContent={{}}
                     />
                 </div>
             </div>
