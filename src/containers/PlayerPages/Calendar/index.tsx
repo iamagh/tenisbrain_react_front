@@ -14,7 +14,7 @@ import {
   EventContentArg,
   formatDate,
 } from '@fullcalendar/core'
-import DialogPlayerEvent from "components/Dialog/DialogPlayerEvent";
+import DialogPlayerEvent from "components/Dialog/DialogPlayerEvent/DialogPlayerEvent";
 import DialogPlayerGroupEvent from "components/Dialog/DialogPlayerGroupEvent/index";
 import Chatting from "components/Chatting";
 import Guide from "components/Guide/Guide";
@@ -107,8 +107,6 @@ const PagePlayerCalenda: React.FC = () => {
     const fetchEvents = async () => {
       try {
         // const playerMembers = await get
-
-
         const my_members = await getAllMembers();
         console.log("$$$$$", my_members)
         setMyMembers(my_members.members);

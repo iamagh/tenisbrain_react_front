@@ -40,10 +40,13 @@ export interface DialogDetailTabProps {
   sendGroupPlayers: (players: _Player[]) => void;
 }
 
+
+
 const GetMemberPlayers= (): _Player[]  => {
   const memberPlayers: _Player[] = useSelector((state: RootState) => state.player.memberPlayers)
   return memberPlayers
 }
+
 
 
 const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPlayers }) =>  {
@@ -51,17 +54,8 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
   const [currentMemberPlayers, setCurrentMemberPlayers] = useState<_Player[]>(GetMemberPlayers());
   const coach: _Coach = useSelector((state: RootState) => state.player.playerCoach);
   const [selectedProduct, setSelectedProduct] = useState<any>({});
-  const [repeated, setRepeated] = useState<boolean>(false);
-  const [paidTxId, setPaidTxId] = useState<string>("");
   const [memberCount, setMemberCount] = useState<number>(0);
   
-  const memberPlayers = GetMemberPlayers();
-
-  const handleRepeatedRadio = (value: boolean) => {
-    if (typeof paidTxId == "undefined") {
-      setRepeated(value);
-    }
-  }
 
   const handleChangeProduct = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const productId = e.currentTarget.value;
@@ -69,7 +63,7 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
   }
 
   useEffect(() => {
-    setMemberCount(data.players.length);
+
   }, []);
 
   return (
@@ -89,7 +83,7 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
       {/* --- event players */}
       <EventPlayers
         maxPlayerCount={data.group_size}
-        currentPlayers={data.players}
+        currentPlayers={[]}
         memberPlayers={currentMemberPlayers}
         onChangeMembers={(players: _Player[]) => {
           // setCurrentMemberPlayers(players);
@@ -109,12 +103,12 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
         <Select
           className="mt-1.5"
           value={data.description}
-          readOnly={true}
+          readOnly={false}
           onChange={handleChangeProduct}
         >
-          {/* {products?.map((product: any, index: number) => (
+          {products?.map((product: any, index: number) => (
                              <option value={product.id} key={index}>{product.product}</option>
-                             ))} */}
+                             ))}
           <option value={data.id} key={data.id}>{data.description}</option>
         </Select>
       </div>
@@ -125,7 +119,7 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
         <div className="mt-1 flex">
           <Select
             className="mt-1"
-            readOnly={true}
+            readOnly={false}
             value={data.start_time}
           >
             {
@@ -143,54 +137,13 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
         <Label>Duaration</Label>
         <Select
           className="mt-1"
-          readOnly={true}
+          readOnly={false}
           value={data.duration}
         >
           <option value="60 minutes">60 minutes</option>
           <option value="90 minutes">90 minutes</option>
         </Select>
       </div>
-
-
-      <div>
-        <Label>Price</Label>
-        <Input className="mt-1" defaultValue={data.product_price} readOnly={true} />
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <Label>Discount Rate</Label>
-          <Input className="mt-1" defaultValue={data.discount} readOnly={true} />
-        </div>
-        <div>
-          <Label>Unit</Label>
-          <Input className="mt-1" defaultValue={data.unit} readOnly={true} />
-        </div>
-      </div>
-
-      {/* --- flag to apply for entire serialized class or not */}
-      {
-        data.event_series != "NoSeries" && (
-          <div>
-            <Label>Repeated</Label>
-            <div className="flex gap-2 mt-2">
-              <Radiobox
-                name="repeated"
-                label="No repeat"
-                id="norepeat"
-                defaultChecked={!repeated}
-                onChange={(e) => handleRepeatedRadio(false)}
-              />
-              <Radiobox
-                name="repeated"
-                label="Repeated"
-                id="repeat"
-                defaultChecked={repeated}
-                onChange={(e) => handleRepeatedRadio(true)}
-              />
-            </div>
-          </div>
-        )
-      }
     </>
   )
 }

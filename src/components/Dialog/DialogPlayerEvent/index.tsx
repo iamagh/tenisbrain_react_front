@@ -150,9 +150,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         if (data.id) {
           console.log('paidTxId',paidTxId)
           console.log('typeof paidTxId',typeof paidTxId)
-
-
-          if (typeof paidTxId !== "undefined") {
+          if (typeof paidTxId == "undefined") {
             setOpenStripeModal(true);
             onOK()
             onClose();

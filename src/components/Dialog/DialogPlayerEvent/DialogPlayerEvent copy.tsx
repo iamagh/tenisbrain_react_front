@@ -18,8 +18,13 @@ import Nav from "shared/Nav/Nav";
 import NavItem2 from "components/NavItem2";
 import ContentAccordion from "components/CustomComponents/ContentAccordion";
 import StripeModal from "components/StripeModal";
-import { cancelPaidProduct,  updatePaidProductFields } from "services/shared/payment";
+import { cancelPaidProduct, updatePaidProductFields } from "services/shared/payment";
 import { getProductStatusForPlayer } from "services/shared/product";
+
+import DialogDetailTab from "./DetailTab";
+import DialogContentTab from "./ContentTab";
+import { _Player } from "dataTypes/Player";
+
 
 interface DialogPlayerEventProps {
   isOpen: boolean;
@@ -55,6 +60,19 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
   const [paidProducts, setPaidProducts] = useState<any>([]);
   const [paidTxId, setPaidTxId] = useState<string>("");
 
+
+  const tabs: { [key: string]: JSX.Element | null } = {
+    "detail": <DialogDetailTab
+      products={products}
+      data={data}
+      sendGroupPlayers={(players: _Player[]) => setMemberPlayers(players)}
+    />,
+    "content": <DialogContentTab
+      groupEvent={data}
+    />,
+    "close": null
+  }
+
   const closeStripeModal = () => {
     setOpenStripeModal(false);
     onOK();
@@ -82,7 +100,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
 
       // console.log("DialogPlayerEvent availabilitys", res_avails, data.id, coach_id);
       // console.log("DialogPlayerEvent availabilitys ~~~ ", res_avails?.availability?.all())
-      
+
       const filteredAvails = res_avails?.availability?.filter((item: any) => item.days[dayIndex].checked);
       const formatedAvails = filteredAvails.concat({
         time: data.start_time,
@@ -94,11 +112,6 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
 
       const res_members = await getAllMembers();
 
-      console.log("@@@@@@: ", res_members.length())
-      if (res_members.length()) {
-
-      }
-
       const updatedMembers = res_members.members.map((member: any) => {
         const isChecked = data?.players?.some((player: any) => player.id === member.id);
         return { ...member, checked: isChecked };
@@ -106,7 +119,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       setMembers(updatedMembers);
       setEventMembers(res_members.all_members);
       setSelectedProduct(products.find((product: any) => product.id == data.product_id) || products[0]);
-      setPaidTxId(data.id? data.players[0]?.transaction_id : null)
+      setPaidTxId(data.id ? data.players[0]?.transaction_id : null)
 
       setEvent({
         group_size: '1',
@@ -128,74 +141,6 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
 
   }, [isOpen, data])
 
-  // useEffect(() => {
-  //   if (!isOpen) return;
-  
-  //   const fetchData = async () => {
-  //     try {
-  //       const [coachResponse, membersResponse] = await Promise.all([
-  //         getAllCoaches(),
-  //         getAllMembers(),
-  //       ]);
-  
-  //       setCoaches(coachResponse.coaches);
-  
-  //       const currentCoachId = data.id ? data.coach_id : coach_id;
-  //       const availabilityResponse = await getAllAvailabilitys(currentCoachId, data?.start);
-  
-  //       const date = new Date(data.start);
-  //       const dayIndex = (date.getDay() + 6) % 7; // Monday as start of week
-  
-  //       console.log("Day index:", dayIndex);
-  //       availabilityResponse?.availability?.forEach((item: any) => {
-  //         console.log("Item for day index:", item.days[dayIndex]);
-  //       });
-        
-  //       const filteredAvails = availabilityResponse?.availability?.filter((item: any) => item.days[dayIndex]?.checked) || [];
-  //       console.log("Full availabilityResponse:", availabilityResponse);
-        
-  
-  //       const formatedAvails = [
-  //         ...filteredAvails,
-  //         { time: data.start_time, day: [] }
-  //       ].sort((a: any, b: any) => a.time?.localeCompare(b.time));
-  
-  //       setAvailabilitys(formatedAvails);
-  
-  //       const updatedMembers = membersResponse.members.map((member: any) => ({
-  //         ...member,
-  //         checked: data?.players?.some((player: any) => player.id === member.id),
-  //       }));
-  
-  //       setMembers(updatedMembers);
-  //       setEventMembers(membersResponse.all_members);
-  //       setSelectedProduct(
-  //         products.find((product: any) => product.id === data.product_id) || products[0]
-  //       );
-  //       setPaidTxId(data.id ? data.players[0]?.transaction_id : null);
-  
-  //       setEvent({
-  //         group_size: '1',
-  //         description: 'Junior - Red Ball',
-  //         duration: '60 minutes',
-  //         start_time: formatedAvails.length ? formatedAvails[0].time : '',
-  //         select_players: [],
-  //         content: [],
-  //         select_coaches: data.coach_id,
-  //         ...data,
-  //       });
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //   };
-  
-  //   fetchData();
-  
-  //   return () => {
-  //     setTabActive('detail');
-  //   };
-  // }, [isOpen, data, coach_id, products]);
-  
   useEffect(() => {
     const getPaidProduct = async () => {
       const res = await getProductStatusForPlayer(player_id);
@@ -205,12 +150,12 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       setPaidProducts(products);
     }
     getPaidProduct();
-  }, [player_id,data]);
+  }, [player_id, data]);
 
   useEffect(() => {
-    const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.package_count > paidProduct.book_count) : null ;
+    const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.package_count > paidProduct.book_count) : null;
     setSelectedPaidProduct(paidProdcut)
-  },[selectedProduct, data, paidProducts])
+  }, [selectedProduct, data, paidProducts])
 
   const getCoach = (coach_id: string) => {
     const coach: any = coaches.find((item: any) => item.id == coach_id);
@@ -234,10 +179,10 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
   }
   const handleSelectMember = (checked: boolean, member: any) => {
     let newplayers = event?.players || [];
-    newplayers.map((v:any ) => {v.checked = true})
-    const player:any = members.find((item: any) => item.id == member.id);
+    newplayers.map((v: any) => { v.checked = true })
+    const player: any = members.find((item: any) => item.id == member.id);
     if (checked) {
-      newplayers = [...newplayers, {...player, checked: true}]
+      newplayers = [...newplayers, { ...player, checked: true }]
     } else {
       newplayers = event.players.filter((item: any) => item.id != member.id)
     }
@@ -245,7 +190,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       ...event,
       players: newplayers
     })
-    console.log('newplayers',newplayers)
+    console.log('newplayers', newplayers)
     setMembers((prevMembers: any) =>
       prevMembers.map((item: any) =>
         item.id === member.id ? { ...item, checked, selected: checked } : item
@@ -264,15 +209,19 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       toast.error('Please select players');
       return;
     }
-    const startTime = new Date(event.start.split('T')[0]+'T'+event.start_time);
+    const startTime = new Date(event.start.split('T')[0] + 'T' + event.start_time);
     const currentTime = new Date();
     const hoursDiff = (startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
-    console.log('hoursDiff',startTime.getTime(),currentTime.getTime() )
-    console.log('coach.notice_period_for_booking',coach.notice_period_for_booking)
-    if(hoursDiff < coach.notice_period_for_booking) {
+    console.log('hoursDiff', startTime.getTime(), currentTime.getTime())
+    console.log('coach.notice_period_for_booking', coach.notice_period_for_booking)
+    if (hoursDiff < coach.notice_period_for_booking) {
       toast.error(`You need to book before ${coach.notice_period_for_booking} hours.`);
       return;
     }
+
+    
+
+
     const reqData = event;
     reqData.dataId = data.id;
     reqData.group = false;
@@ -309,8 +258,8 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
           repeat: false,
           payment_intent_id: null,
         };
-        const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.package_count > paidProduct.book_count) : null ;
-        console.log('paidProdcut',paidProdcut)
+        const paidProdcut = paidProducts.length ? paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.package_count > paidProduct.book_count) : null;
+        console.log('paidProdcut', paidProdcut)
         const selectedPaidProduct = paidProdcut || defaultProdcut;
         const isPaidProduct = !!paidProdcut;
         const product_price = isPaidProduct ? products.find((product: any) => product.id == selectedPaidProduct.product_id).price : selectedProduct.price;
@@ -321,12 +270,12 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
         if (data.id) {
           reqData.repeat = selectedPaidProduct.repeat;
           reqData.transaction_id = paidTxId;
-          if(reqData.players.length != Object.keys(data.players).length) {
+          if (reqData.players.length != Object.keys(data.players).length) {
             if (isPaidProduct && isSeries) {
               if (book_count + (checkedCount - Object.keys(data.players).length) <= paidProdcut.package_count) {
                 // reqData.transaction_id = paidTxId;
                 reqData.transaction_id = selectedPaidProduct.payment_intent_id;
-                const updateRes = await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {book_count: book_count + (checkedCount - Object.keys(data.players).length)});
+                const updateRes = await updatePaidProductFields(selectedPaidProduct.payment_intent_id, { book_count: book_count + (checkedCount - Object.keys(data.players).length) });
                 const res = await updateEvent(data.id, reqData);
                 return;
               } else {
@@ -347,10 +296,10 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
             if (book_count + checkedCount <= paidProdcut.package_count) {
               // reqData.transaction_id = paidTxId;
               reqData.transaction_id = selectedPaidProduct.payment_intent_id;
-              const updateRes = await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {book_count: book_count + checkedCount});
+              const updateRes = await updatePaidProductFields(selectedPaidProduct.payment_intent_id, { book_count: book_count + checkedCount });
               if (updateRes) {
                 const res = await createEvent(reqData);
-                await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {event_id: selectedPaidProduct.event_id + ',' + res.event.id});
+                await updatePaidProductFields(selectedPaidProduct.payment_intent_id, { event_id: selectedPaidProduct.event_id + ',' + res.event.id });
               }
               toast.success('Created New Event successfully.');
             } else {
@@ -383,7 +332,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
       const startTime = new Date(data.start);
       const currentTime = new Date();
       const hoursDiff = (startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
-      if(hoursDiff < coach.notice_period_for_cancellation) {
+      if (hoursDiff < coach.notice_period_for_cancellation) {
         toast.error(`You need ${coach.notice_period_for_cancellation} hours to cancel.`);
         setLoading(true);
         return;
@@ -398,11 +347,11 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
         const selectedPaidProduct = paidProducts.find((paidProduct: any) => paidProduct.product_id == selectedProduct.id && paidProduct.event_id.includes(data.id));
         console.log(paidProducts)
         let cancelRes
-        if(selectedPaidProduct.repeat && selectedPaidProduct.book_count - data.players.length > 0) {
+        if (selectedPaidProduct.repeat && selectedPaidProduct.book_count - data.players.length > 0) {
           const event_ids = selectedPaidProduct.event_id.split(',')
           const updateEventIds = event_ids.filter((v: string) => v != data.id).join(',')
           console.log(updateEventIds)
-          await updatePaidProductFields(selectedPaidProduct.payment_intent_id, {book_count: selectedPaidProduct.book_count - data.players.length, event_id: updateEventIds});
+          await updatePaidProductFields(selectedPaidProduct.payment_intent_id, { book_count: selectedPaidProduct.book_count - data.players.length, event_id: updateEventIds });
           cancelRes = true;
         }
         else cancelRes = await cancelPaidProduct(selectedPaidProduct?.payment_intent_id)
@@ -493,97 +442,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
                   {data.id !== undefined && <ChatButton setIsOpen={setIsOpenChatRooms} rooms={rooms} setRoomInfo={setRoomInfo} eventId={data.id} />}
                 </div>
                 <div className="flex-grow mt-10 md:mt-0 max-w-3xl space-y-6">
-                  {
-                    tabActive === 'detail' ? <>
-                      <div>
-                        <Label>Group size</Label>
-                        <Input className="mt-1.5" value={event.players ? event.players.length : 0} readOnly={true} />
-                      </div>
 
-                      {/* ---- */}
-                      <div>
-                        <Label>Event Players</Label>
-                        {/* <Textarea className="mt-1.5" defaultValue={data.players?.map((player: any) => `${player.first_name} ${player.last_name} \n`)} readOnly={true} /> */}
-                        <div className="h-32 overflow-y-auto">
-                          {/* <Textarea className="mt-1.5" defaultValue={data.players?.map((player: any) => `${player.first_name} ${player.last_name} \n`)} readOnly={true} /> */}
-                          {members?.map((item: any, index: number) => (
-                            <div key={index} className="py-1">
-                              <Checkbox
-                                name={item.id}
-                                label={`${item.first_name} ${item.last_name}`}
-                                defaultChecked={isChecked(item)}
-                                onChange={(checked) =>
-                                  handleSelectMember(checked, item)
-                                }
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      {selectedPaidProduct?.repeat && (
-                        <div className="text-right text-red-500">
-                            {`Remaining Credits: ${selectedPaidProduct.package_count - selectedPaidProduct.book_count}`}
-                        </div>
-                      )}
-                      <div>
-                        <Label>Event Coach</Label>
-                        <Input className="mt-1.5" defaultValue={getCoach(data.coach_id)} readOnly={true} />
-                      </div>
-
-                      {/* ---- */}
-                      <div>
-                        <Label>Description</Label>
-                        <Select className="mt-1.5" defaultValue={data.product_id} onChange={handleChangeProduct}>
-                          {products?.map((product: any, index: number) => (
-                            <option value={product.id} key={index}>{product.product}</option>
-                          ))}
-                        </Select>
-                      </div>
-
-                      {/* ---- */}
-                      <div>
-                        <Label>Start Time</Label>
-                        <div className="mt-1.5 flex">
-                          {/* <span className="inline-flex items-center px-2.5 rounded-l-2xl border border-r-0 border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 text-sm">
-                      <i className="text-2xl las la-map-signs"></i>
-                    </span> */}
-                          {/* <Input
-                      className="!rounded-l-none"
-                      defaultValue={data.start_time}
-                      readOnly
-                    /> */}
-                          <Select className="mt-1.5" defaultValue={data.start_time} onChange={(e) => setEvent({ ...event, start_time: e.target.value })}>
-                            {/* <option value={data.start_time}>{data.start_time}</option> */}
-                            {
-                              availabilitys.map((avail: any, index: number) => (
-                                <option key={index} value={avail.time}>{avail.time}</option>
-                              ))
-                            }
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* ---- */}
-                      <div>
-                        <Label>Duaration</Label>
-                        <Select className="mt-1.5" defaultValue={data.duration} onChange={(e) => setEvent({ ...event, duration: e.target.value })}>
-                          <option value="60 minutes">60 minutes</option>
-                          <option value="90 minutes">90 minutes</option>
-                        </Select>
-                      </div>
-                    </> : <>
-                      {/* --- add content section */}
-                      <div>
-                        <div className="mt-2 space-y-2">
-                          <ContentAccordion
-                            isCoach={false}
-                            contents={event.content}
-                            groupContent={event.content}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  }
                 </div>
                 <div className="p-5 bg-neutral-50 dark:bg-neutral-900 dark:border-t dark:border-neutral-800 flex items-center justify-between">
                   {!loading ?
@@ -601,7 +460,7 @@ const DialogPlayerEvent: FC<DialogPlayerEventProps> = ({ isOpen, data, onOK, onC
                         onClick={handleSubmit}
                         sizeClass="px-4 py-2 sm:px-5"
                       >
-                        
+
                         Apply
                       </ButtonPrimary>
                       <ButtonSecondary sizeClass="px-4 py-2 sm:px-5" onClick={handleDelete}>Delete</ButtonSecondary>
