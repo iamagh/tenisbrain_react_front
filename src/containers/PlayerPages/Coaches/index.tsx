@@ -47,11 +47,11 @@ const PagePlayerCoaches: React.FC = () => {
   
   const handleCardClick = async (coachId: any) => {
     try {
-
+      
       const selectedCoach:_Coach = {
         id : coachId,
-        first_name : coaches[coachId - 1].first_name,
-        last_name : coaches[coachId - 1].last_name
+        first_name : String(coaches.find(e => e.id == coachId)?.first_name),
+        last_name : String(coaches.find(e => e.id == coachId)?.last_name),
       }
 
       dispatch(setPlayerCoach(selectedCoach))
