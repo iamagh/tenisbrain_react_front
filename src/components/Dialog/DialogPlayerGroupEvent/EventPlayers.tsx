@@ -56,9 +56,10 @@ const EventPlayers: React.FC<EventPlayersProps> = ({ maxPlayerCount, currentPlay
       //   memberPlayers.find((player: _Player) => player.id === id)
       // )))
     } else {
-      setSelectedMembers(selectedMembers.filter(id => id !== player.id));
+      const newMembers:string[] = selectedMembers.filter(id => id !== player.id)
+      setSelectedMembers(newMembers);
       onChangeMembers(
-        selectedMembers.map((id) => (
+        newMembers.map((id) => (
           memberPlayers.find((player: _Player) => player.id === id)
         )));
 

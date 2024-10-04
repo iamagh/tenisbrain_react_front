@@ -53,7 +53,7 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
   const [selectedProduct, setSelectedProduct] = useState<any>({});
   const [repeated, setRepeated] = useState<boolean>(false);
   const [paidTxId, setPaidTxId] = useState<string>("");
-
+  const [memberCount, setMemberCount] = useState<number>(0);
   
 
 
@@ -66,8 +66,11 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
   const handleChangeProduct = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const productId = e.currentTarget.value;
     setSelectedProduct(products.find((product: any) => product.id == productId))
-
   }
+
+  useEffect(() => {
+    setMemberCount(data.players.length);
+  }, []);
 
   return (
     <>
@@ -76,7 +79,7 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
         <Label>Group size - {data.group_size}</Label>
         <Input
           className="mt-1.5"
-          value={`${data.players ? data.players.length : 0}/${data.group_size}`}
+          value={`${data.players ? memberCount : 0}/${data.group_size}`}
           type="text"
           min="3"
           max="20"
@@ -89,9 +92,10 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
         currentPlayers={data.players}
         memberPlayers={currentMemberPlayers}
         onChangeMembers={(players: _Player[]) => {
-          setCurrentMemberPlayers(players);
+          // setCurrentMemberPlayers(players);
           console.log("players", players)
           sendGroupPlayers(players);
+          setMemberCount(players.length);
         }}
       />
       {/* --- event coach */}

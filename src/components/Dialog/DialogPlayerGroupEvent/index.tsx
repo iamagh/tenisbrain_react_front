@@ -97,7 +97,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       })
     } else {
       setGroupEvent(data);
-      console.log('data', data)
+      // console.log('data', data)
       const originTx = data.players.filter((player: any) => player.is_repeat === false).map((player: any) => player.transaction_id);
       if (originTx.length > 0) {
         setPaidTxId(originTx[0])
