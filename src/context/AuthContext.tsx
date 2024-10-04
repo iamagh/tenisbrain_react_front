@@ -48,6 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       getCoachById(player_coach).then((res) => {
         if (res) {
+          console.log("12312432342347", res.content)
           setPlayerCoach(res.content)
         } 
       })
