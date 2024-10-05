@@ -23,6 +23,7 @@ interface EventPlayersProps {
 const EventPlayers: React.FC<EventPlayersProps> = ({ maxPlayerCount, currentPlayers, memberPlayers, onChangeMembers }) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
+  console.log("#######", currentPlayers)
   const preSelectMembers: string[] = memberPlayers.map((member: any) => {
     const res = currentPlayers.filter((player: any) => player.id == member.id);
     if (res.length > 0) {
@@ -41,11 +42,11 @@ const EventPlayers: React.FC<EventPlayersProps> = ({ maxPlayerCount, currentPlay
       const checkArray: string[] = [...selectedMembers, player.id]
       console.log("length--------", currentPlayers.length + checkArray.length - preSelectMembers.length)
       console.log("length--------", currentPlayers.length)
-      const totalCount = currentPlayers.length + checkArray.length - (preSelectMembers.filter(e => e != undefined)).length
-      if (totalCount > maxPlayerCount) {
-        toast.error(OVER_CHECK_COUNT);
-        return;
-      }
+      // const totalCount = currentPlayers.length + checkArray.length - (preSelectMembers.filter(e => e != undefined)).length
+      // if (totalCount > maxPlayerCount) {
+      //   toast.error(OVER_CHECK_COUNT);
+      //   return;
+      // }
       setSelectedMembers(checkArray);
       // memberPlayers.find((player:_Player) => player.id === "id")
       onChangeMembers(

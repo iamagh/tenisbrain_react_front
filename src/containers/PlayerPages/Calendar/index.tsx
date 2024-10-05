@@ -26,7 +26,7 @@ import { getCoachById } from "services/player/coches";
 import { getProductsForCalendar } from "services/shared/product";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
-import { setAllEvents, setMemberPlayers } from "store/playerSlice"
+import { setAllEvents, setDialogState, setMemberPlayers } from "store/playerSlice"
 
 import { getAllMembers } from "services/player/members";
 
@@ -49,7 +49,9 @@ const PagePlayerCalenda: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isOpenAvailability, setIsOpenAvailability] = useState<boolean>(false);
-  const [isOpenEvent, setIsOpenEvent] = useState<boolean>(false);
+  // const firstDialogState = useSelector((state: RootState) => state.player.dialogState)
+  // console.log("$$$$$$$", firstDialogState)
+  const [isOpenEvent, setIsOpenEvent] = useState<boolean>( false );
   const [chatRooms, setChatRooms] = useState<any>([]);
   const [isOpenChatRooms, setIsOpenChatRooms] = useState<boolean>(false);
   const [roomInfo, setRoomInfo] = useState<any>(null);
@@ -279,6 +281,7 @@ const PagePlayerCalenda: React.FC = () => {
 
   const openDialogEvent = (): void => {
     setIsOpenEvent(true);
+    dispatch(setDialogState("eventDialog"))
   };
 
   /** --- related with group event modal */

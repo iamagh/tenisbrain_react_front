@@ -56,6 +56,7 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
   const [selectedProduct, setSelectedProduct] = useState<any>({});
   const [memberCount, setMemberCount] = useState<number>(0);
   
+  console.log("@@@@@@", data)
 
   const handleChangeProduct = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const productId = e.currentTarget.value;
@@ -70,10 +71,10 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
     <>
       {/* --- group size */}
       <div>
-        <Label>Group size - {data.group_size}</Label>
+        <Label>Group size - {memberCount}</Label>
         <Input
           className="mt-1.5"
-          value={`${data.players ? memberCount : 0}/${data.group_size}`}
+          value={`${memberCount}/${memberCount}`}
           type="text"
           min="3"
           max="20"
@@ -82,8 +83,8 @@ const DialogDetailTab: FC<DialogDetailTabProps> = ({ products, data, sendGroupPl
       </div>
       {/* --- event players */}
       <EventPlayers
-        maxPlayerCount={data.group_size}
-        currentPlayers={[]}
+        maxPlayerCount={data.group_size?data.group_size:0}
+        currentPlayers={data.players?data.players:[]}
         memberPlayers={currentMemberPlayers}
         onChangeMembers={(players: _Player[]) => {
           // setCurrentMemberPlayers(players);

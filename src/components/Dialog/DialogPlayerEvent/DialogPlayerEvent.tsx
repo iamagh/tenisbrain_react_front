@@ -252,7 +252,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
     reqData.group = false;
     reqData.repeat_status = 'undefined';
     reqData.isDelete = false;
-
+    reqData.players = memberPlayers;
     if (!reqData.product_id) {
       reqData.product_id = selectedProduct.id;
       reqData.description = selectedProduct.product;

@@ -5,7 +5,8 @@ import { _Coach } from "dataTypes/Player";
 interface PlayerState {
     playerCoach: _Coach;
     memberPlayers: [];
-    allEvents: []
+    allEvents: [],
+    dialogState: ""
 }
 
 const initialState: PlayerState = {
@@ -23,7 +24,8 @@ const initialState: PlayerState = {
         bio: ""
     },
     memberPlayers: [],
-    allEvents: []
+    allEvents: [],
+    dialogState: ""
 }
 
 export const playerSlice = createSlice({
@@ -41,11 +43,12 @@ export const playerSlice = createSlice({
         setAllEvents: (state, action: PayloadAction<any>) => {
             state.allEvents = action.payload;
         },
-
-        
+        setDialogState: (state, action: PayloadAction<any>) => {
+            state.dialogState = action.payload;
+        },
 
     }
 });
 
-export const { setPlayerCoach, setMemberPlayers, setAllEvents } = playerSlice.actions;
+export const { setPlayerCoach, setMemberPlayers, setAllEvents, setDialogState } = playerSlice.actions;
 export default playerSlice.reducer;
