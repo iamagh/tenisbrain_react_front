@@ -45,7 +45,7 @@ export const getAllEvents = async (): Promise<any> => {
 
 export const updateEvent = async (eventId: string, eventData: any): Promise<any> => {
   try {
-    eventData.transaction_id = eventData.transaction_id ? eventData.transaction_id : "";
+    // eventData.transaction_id = eventData.transaction_id ? eventData.transaction_id : "";
     const response = await axiosInstance.post(`/player/events/${eventId}`, eventData);
     return response.data;
   } catch (error: any) {

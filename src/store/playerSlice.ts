@@ -4,7 +4,8 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { _Coach } from "dataTypes/Player";
 interface PlayerState {
     playerCoach: _Coach;
-    memberPlayers: []
+    memberPlayers: [];
+    allEvents: []
 }
 
 const initialState: PlayerState = {
@@ -21,7 +22,8 @@ const initialState: PlayerState = {
         phone_no: "",
         bio: ""
     },
-    memberPlayers: []
+    memberPlayers: [],
+    allEvents: []
 }
 
 export const playerSlice = createSlice({
@@ -36,10 +38,14 @@ export const playerSlice = createSlice({
             state.memberPlayers = action.payload;
         },
 
+        setAllEvents: (state, action: PayloadAction<any>) => {
+            state.allEvents = action.payload;
+        },
+
         
 
     }
 });
 
-export const { setPlayerCoach, setMemberPlayers } = playerSlice.actions;
+export const { setPlayerCoach, setMemberPlayers, setAllEvents } = playerSlice.actions;
 export default playerSlice.reducer;

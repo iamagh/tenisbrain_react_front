@@ -108,7 +108,8 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
   }, [isOpen])
 
   const handleSubmit = async (leave:boolean = false) => {
-    groupEvent.players = memberPlayers.filter((member: any) => member.checked == true);
+    console.log("handleSubmit = async  ", memberPlayers, );
+    groupEvent.players = memberPlayers;
     const checkedCount = memberPlayers.length;
     if (checkedCount === 0 && !leave) {
       toast.error('Please select at least one player.');
@@ -132,6 +133,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
       }
       setReqEventData(reqData)
       setLoading(true)
+      console.log("coach.enable_payment ",coach,  coach.enable_payment );
       if (coach.enable_payment === 'disabled') {
         reqData.transaction_id = "";
         await updateEvent(data.id, reqData);
@@ -153,6 +155,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
 
 
           if (typeof paidTxId !== "undefined") {
+            console.log("setOpenStripeModal(true)  ---1---; ", paidTxId, typeof paidTxId)
             setOpenStripeModal(true);
             onOK()
             onClose();
@@ -169,8 +172,10 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
               await updateEvent(data.id, reqData);
             } else {
               reqData.repeat_status = data.repeated
-              if(reqData.players.length !== data.players.length)
+              if(reqData.players.length !== data.players.length){
+                console.log("setOpenStripeModal(true); ---2---", reqData.players)
                 setOpenStripeModal(true);
+              }
               else {
                 reqData.players = memberPlayers;
                 await updateEvent(data.id, reqData);

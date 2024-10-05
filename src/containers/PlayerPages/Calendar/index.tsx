@@ -26,7 +26,7 @@ import { getCoachById } from "services/player/coches";
 import { getProductsForCalendar } from "services/shared/product";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
-import { setMemberPlayers } from "store/playerSlice"
+import { setAllEvents, setMemberPlayers } from "store/playerSlice"
 
 import { getAllMembers } from "services/player/members";
 
@@ -119,6 +119,7 @@ const PagePlayerCalenda: React.FC = () => {
          */
 
         const data = await getAllEvents();
+        dispatch(setAllEvents(data.events))
         console.log('all events', data)
         const group_events = data.group_events;
         group_events.forEach((group_event: any) => {

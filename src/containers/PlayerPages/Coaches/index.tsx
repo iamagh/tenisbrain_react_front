@@ -28,6 +28,7 @@ type Coach = {
   email: string;
   phone_no: string;
   bio: string;
+  enable_payment: string;
 };
 
 const PagePlayerCoaches: React.FC = () => {
@@ -52,6 +53,7 @@ const PagePlayerCoaches: React.FC = () => {
         id : coachId,
         first_name : String(coaches.find(e => e.id == coachId)?.first_name),
         last_name : String(coaches.find(e => e.id == coachId)?.last_name),
+        enable_payment: String(coaches.find(e => e.id == coachId)?.enable_payment)
       }
 
       dispatch(setPlayerCoach(selectedCoach))
