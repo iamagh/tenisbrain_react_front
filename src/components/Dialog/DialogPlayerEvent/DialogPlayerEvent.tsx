@@ -39,9 +39,10 @@ export interface DialogCoachEventProps {
   rooms: any;
   setRoomInfo: (param: any) => void;
   stripePromise: any;
+  creation: string;
 }
 
-const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products, stripePromise }) => {
+const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products, stripePromise, creation }) => {
 
 
   const player_id = localStorage.getItem("user") || "0";
@@ -295,6 +296,10 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
         if (data.id) {
           reqData.repeat = selectedPaidProduct.repeat;
           reqData.transaction_id = paidTxId;
+
+
+
+          // players count is changed
           if (reqData.players.length != Object.keys(data.players).length) {
             if (isPaidProduct && isSeries) {
               if (book_count + (checkedCount - Object.keys(data.players).length) <= paidProdcut.package_count) {
@@ -310,7 +315,10 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
             } else {
               setOpenStripeModal(true);
             }
+
+
           } else {
+            // changed only player info
             const res = await updateEvent(data.id, reqData);
           }
           // setOpenStripeModal(true);
@@ -356,7 +364,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
       
       const startTime = new Date(data.start);
       const currentTime = new Date();
-      const hoursDiff = (startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
+      // const hoursDiff = (startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
       // if (hoursDiff < coach.notice_period_for_cancellation) {
       //   toast.error(`You need ${coach.notice_period_for_cancellation} hours to cancel.`);
       //   return;
@@ -366,6 +374,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
     } catch (err: any) {
       toast.error(err.message || 'The error is occur while hanlding')
     }
+    onClose()
   }
 
   return (
@@ -445,7 +454,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
           </div>
         </div>
       </Dialog>
-      {/* {openStripeModal && <StripeModal
+       {openStripeModal && <StripeModal
         stripePromise={stripePromise}
         modalIsOpen={openStripeModal}
         onRequestClose={closeStripeModal}
@@ -455,7 +464,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
         cancelPaidProduct={cancelPaidProduct}
         paidTxId={paidTxId}
         members={memberPlayers}
-      />} */}
+      />} 
     </>
   )
 }

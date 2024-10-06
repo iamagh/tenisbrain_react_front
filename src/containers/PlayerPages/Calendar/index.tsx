@@ -61,6 +61,10 @@ const PagePlayerCalenda: React.FC = () => {
   const [products, setProducts] = useState<any>([]);
   const [isOpenGroupEvent, setIsOpenGroupEvent] = useState<boolean>(false);
   const [myMembers, setMyMembers] = useState<any>([]);
+  const [createOrDelete, setCreateOrDelete] = useState<string>('create');  // 'create' or 'edit'
+
+
+
   const dispatch = useDispatch();
   const getProducts = useCallback(async () => {
     const res = await getProductsForCalendar(coach_id);
@@ -212,13 +216,12 @@ const PagePlayerCalenda: React.FC = () => {
     const group_events = events.filter((item: any) => item.event_series == selectedEvent.event_series);
     group_events.map((group_event: any) => {
       let isBooked = false;
-
       /**
        *TODO: filter data from the server   
        */
       group_event.players.forEach((player: any) => {
         myMembers.some((my_member: any) => {
-          if (my_member.id == player.id) { isBooked = true; }
+          if (my_member.id == player.id) { isBooked = true; setCreateOrDelete("edit") }
         });
       });
 
@@ -226,9 +229,9 @@ const PagePlayerCalenda: React.FC = () => {
       if (isBooked) {
         events.forEach((event: any) => {
           if (!Array.isArray(event.booked_dates)) {
-            event.booked_dates = [];
+            // event.booked_dates = [];
           }
-          event.booked_dates.push(group_event.start);
+          // event.booked_dates.push(group_event.start);
         });
       } else {
         unbookedEventCount++;
@@ -487,6 +490,7 @@ const PagePlayerCalenda: React.FC = () => {
         products={products}
         onClose={closeDialogEvent}
         stripePromise={stripePromise}
+        creation={createOrDelete}
       />
       <DialogPlayerGroupEvent
         setIsOpenChatRooms={setIsOpenChatRooms}
