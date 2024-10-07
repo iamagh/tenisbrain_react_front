@@ -28,7 +28,7 @@ export const getCoachById = async (coachId: string): Promise<any> => {
 export const getAllCoaches = async (): Promise<any> => {
   try {
     const response = await axiosInstance.get(`/player/coaches/`);
-    console.log("getAllCoaches = ", response);
+    // console.log("getAllCoaches = ", response);
     return response.data;
   } catch (error: any) {
     throw error.response ? error.response.data : error.message;

@@ -42,6 +42,10 @@ export interface DialogCoachEventProps {
   creation: string;
 }
 
+const GetCoach = () => {
+  return useSelector((state: RootState) => state.player.playerCoach)
+}
+
 const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products, stripePromise, creation }) => {
 
 
@@ -145,6 +149,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
   }
 
   useEffect(() => {
+
     if (!isOpen) { return }
     const fetchData = async () => {
       let res_avails: any;

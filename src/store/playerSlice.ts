@@ -34,6 +34,7 @@ export const playerSlice = createSlice({
     reducers: {
         setPlayerCoach: (state, action: PayloadAction<any>) => {
             state.playerCoach = action.payload;
+            console.log("^^^^^^^^^^^^^^^^", action.payload)
         },
 
         setMemberPlayers: (state, action: PayloadAction<any>) => {

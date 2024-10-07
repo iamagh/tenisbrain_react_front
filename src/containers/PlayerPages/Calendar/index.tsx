@@ -31,7 +31,9 @@ import { setAllEvents, setDialogState, setMemberPlayers } from "store/playerSlic
 import { getAllMembers } from "services/player/members";
 
 import { loadStripe, Stripe } from "@stripe/stripe-js";
-import { setPlayerCoach } from "store/userSlice";
+import { setPlayerCoach } from "store/playerSlice";
+
+import { getAllCoaches } from "services/player/coches";
 
 const stripePromise: Promise<Stripe | null> = loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
 
@@ -70,9 +72,6 @@ const PagePlayerCalenda: React.FC = () => {
     const res = await getProductsForCalendar(coach_id);
     setProducts(res?.products);
   }, [products]);
-
-  
-
 
   const [groupEventDialogData, setGroupEventDialogData] = useState({
     date: new Date(),
@@ -117,8 +116,24 @@ const PagePlayerCalenda: React.FC = () => {
         console.log("$$$$$", my_members)
         setMyMembers(my_members.members);
         dispatch(setMemberPlayers(my_members.members))
-        dispatch(setPlayerCoach(my_members.coach))
-        // console.log("my memberPlayers", my_members)
+        // dispatch(setPlayerCoach(my_members.coach))
+        
+        getAllCoaches().then(res => {
+          console.log("result from get coach by id --->", res)
+          const data = res.coaches.filter((e:any) => e.id == coach_id)
+          console.log("result from get coaches --->", data[0])
+
+          dispatch(setPlayerCoach(my_members.coach))
+
+          console.log(dispatch(setPlayerCoach({
+            id: Number(coach_id),
+            first_name: data[0].first_name,
+            last_name: data[0].last_name
+          })))
+
+        }).catch(err => {
+          console.log("error in get coach by id --->", err)
+        })
 
         /**
          * TODO: send coache id and date then get event data from server
