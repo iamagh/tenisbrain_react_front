@@ -48,7 +48,7 @@ const GetCoach = () => {
 
 const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onClose, setIsOpenChatRooms, rooms, setRoomInfo, products, stripePromise, creation }) => {
 
-
+  const eDate = new Date(data.start).toDateString();
   const player_id = localStorage.getItem("user") || "0";
   const [loading, setLoading] = useState<boolean>(false);
   const [tabActive, setTabActive] = useState('detail');
@@ -149,7 +149,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
   }
 
   useEffect(() => {
-
+    setLoading(false)
     if (!isOpen) { return }
     const fetchData = async () => {
       let res_avails: any;
@@ -233,8 +233,10 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
 
 
   const handleSubmit = async () => {
+    setLoading(false)
     const checkedCount = memberPlayers.length;
     if (!checkedCount) {
+      setLoading(false)
       toast.error('Please select players');
       return;
     }
@@ -312,9 +314,11 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
                 reqData.transaction_id = selectedPaidProduct.payment_intent_id;
                 const updateRes = await updatePaidProductFields(selectedPaidProduct.payment_intent_id, { book_count: book_count + (checkedCount - Object.keys(data.players).length) });
                 const res = await updateEvent(data.id, reqData);
+                setLoading(false)
                 return;
               } else {
                 toast.error("Your credit expired, please pay again");
+                setLoading(false)
                 return;
               }
             } else {
@@ -342,6 +346,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
               toast.success('Created New Event successfully.');
             } else {
               toast.error("Your credit expired, please pay again");
+              setLoading(false)
               return;
             }
           } else {
@@ -391,7 +396,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
         onClose={() => { }}
       >
         <div className="min-h-screen px-4 text-center relative">
-          {/* <LayoutLoading show={loading} /> */}
+          <LayoutLoading show={loading} />
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
           <span
@@ -406,7 +411,7 @@ const DialogPlayerEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK, onCl
               as="h3"
               className="text-lg font-medium leading-6 text-gray-900 text-center"
             >
-              GROUP CLASS SCHEDULED - {"eData"}
+              EVENT SCHEDULED - {eDate}
             </Dialog.Title>
 
             <div className="mt-4">

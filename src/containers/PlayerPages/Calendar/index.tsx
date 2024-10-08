@@ -108,14 +108,22 @@ const PagePlayerCalenda: React.FC = () => {
     )
   }
 
+  useEffect(()=>{
+    getAllMembers().then(res => {
+      setMyMembers(res.members);
+      dispatch(setMemberPlayers(res.members))
+    })
+    // const my_members = await getAllMembers();
+   
+  }, [coach_id])
+
+   
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         // const playerMembers = await get
-        const my_members = await getAllMembers();
-        console.log("$$$$$", my_members)
-        setMyMembers(my_members.members);
-        dispatch(setMemberPlayers(my_members.members))
+        
+        
         // dispatch(setPlayerCoach(my_members.coach))
         
         getAllCoaches().then(res => {
@@ -123,7 +131,7 @@ const PagePlayerCalenda: React.FC = () => {
           const data = res.coaches.filter((e:any) => e.id == coach_id)
           console.log("result from get coaches --->", data[0])
 
-          dispatch(setPlayerCoach(my_members.coach))
+          
 
           console.log(dispatch(setPlayerCoach({
             id: Number(coach_id),
@@ -154,7 +162,7 @@ const PagePlayerCalenda: React.FC = () => {
           if (!series) return acc;
 
           const isMyPlayerInGroup = group_event.players.some((player: any) =>
-            my_members.members.some((my_member: any) => my_member.id === player.id && player.is_paid)
+            myMembers.some((my_member: any) => my_member.id === player.id && player.is_paid)
           );
 
           if (isMyPlayerInGroup) {

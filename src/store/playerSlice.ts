@@ -36,18 +36,15 @@ export const playerSlice = createSlice({
             state.playerCoach = action.payload;
             console.log("^^^^^^^^^^^^^^^^", action.payload)
         },
-
         setMemberPlayers: (state, action: PayloadAction<any>) => {
             state.memberPlayers = action.payload;
         },
-
         setAllEvents: (state, action: PayloadAction<any>) => {
             state.allEvents = action.payload;
         },
         setDialogState: (state, action: PayloadAction<any>) => {
             state.dialogState = action.payload;
         },
-
     }
 });
 

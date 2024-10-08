@@ -108,11 +108,13 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
   }, [isOpen])
 
   const handleSubmit = async (leave:boolean = false) => {
+    setLoading(true)
     console.log("handleSubmit = async  ", memberPlayers, );
     groupEvent.players = memberPlayers;
     const checkedCount = memberPlayers.length;
     if (checkedCount === 0 && !leave) {
       toast.error('Please select at least one player.');
+      setLoading(false)
       return;
     }
 
@@ -140,6 +142,8 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
         onClose();
         onOK()
         toast.success('Updated Event.');
+        setLoading(false)
+
       } else {
         console.log('reqData.product_price',reqData.product_price)
         if (repeated) {
@@ -159,8 +163,10 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
             setOpenStripeModal(true);
             onOK()
             onClose();
+            setLoading(false)
           } else {
-            reqData.transaction_id = paidTxId;
+            reqData.transaction_id = "";
+            // reqData.transaction_id = paidTxId;
             if (leave) {
               reqData.isDelete = true;
               reqData.repeat_status = data.repeated
@@ -179,11 +185,13 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
               else {
                 reqData.players = memberPlayers;
                 await updateEvent(data.id, reqData);
+                setLoading(false)
               }
             }
             onClose();
             onOK()
             toast.success('Updated Event.');
+            setLoading(false)
           }
         }
       }
@@ -191,6 +199,7 @@ const DialogPlayerGroupEvent: FC<DialogCoachEventProps> = ({ isOpen, data, onOK,
     } catch (err: any) {
       toast.error(err.message);
       setError(err.message || 'The error is occur while hanlding');
+      setLoading(false)
     }
   }
 
